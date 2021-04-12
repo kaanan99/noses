@@ -10,5 +10,5 @@ docker run \
     -e USER=$USER \
     -e HOME=/data/$USER \
     -w $PWD \
-    urban-forest/latest \
+    noses/latest \
     bash
