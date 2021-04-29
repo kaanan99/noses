@@ -89,10 +89,6 @@ def get_labels(bb_data, threshold = 1):
   labels = np.array(labels)
   return labels
 
-labels = get_labels(bb_data)
-# TODO: ask Dr. Dekyhtar how to handle situation where two seals are present in a subimage
-
-pd.Series(labels).value_counts()
 
 """## Preprocessing and Train-Test Split)"""
 
@@ -125,22 +121,6 @@ def get_xy_indices(bb_data, test_frac = .1):
   test_indices = np.concatenate((np.array(indices_w_seal[num_train_w_seal:]),
                                   np.array(indices_wo_seal[num_train_wo_seal:])))
   return train_indices, test_indices
-
-train_indices, test_indices = get_xy_indices(bb_data)
-
-Xtrain, ytrain = preprocessing(imgs[train_indices], labels[train_indices])
-Xtest, ytest = preprocessing(imgs[test_indices], labels[test_indices])
-
-print("train dims:", Xtrain.shape, ytrain.shape)
-print("test dims:", Xtest.shape, ytest.shape)
-print()
-
-"""## Training"""
-
-lr = 3e-4
-batch_size = 32
-conv_dim_init = 64
-epochs = 1
 
 def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1,
                  kernel_size=3, strides=(1, 1), dense_output_size =1024):
@@ -206,22 +186,49 @@ Paramterers:
 - Dense Ouput Size: size of output space for the dense layer(s)
 """
 
-cnn_blocks_grid = [1, 2, 3]
-dense_layers_grid = [1, 2, 3]
-filter_multiplier_grid  = [.5, 1, 2]
-kernel_size_grid = [2, 3, 4]
-strides_grid = [(1, 1), (2, 2), (3, 3)]
-dense_output_size_grid = [1024, 2048, 4096]
+# test different thresholds for the image classification
+thresholds = [0.8, 0.9, 1.0]
 
-for cnn_blocks in cnn_blocks_grid:
-  for dense_layers in dense_layers_grid:
-    for filter_multiplier in filter_multiplier_grid:
-      for kernel_size in kernel_size_grid:
-        for strides in strides_grid:
-          for dense_output_size in dense_output_size_grid:
-            ypred = run_model(cnn_blocks, dense_layers, filter_multiplier,
-                              kernel_size, strides, dense_output_size)
-            print_metrics(ypred, ytest)
+for thres in thresholds:
+  print("Threshold: ", thres)
+  labels = get_labels(bb_data, thres)
+  # TODO: ask Dr. Dekyhtar how to handle situation where two seals are present in a subimage
+
+  pd.Series(labels).value_counts()
+
+  train_indices, test_indices = get_xy_indices(bb_data)
+
+  Xtrain, ytrain = preprocessing(imgs[train_indices], labels[train_indices])
+  Xtest, ytest = preprocessing(imgs[test_indices], labels[test_indices])
+
+  print("train dims:", Xtrain.shape, ytrain.shape)
+  print("test dims:", Xtest.shape, ytest.shape)
+  print()
+
+  """## Training"""
+
+  lr = 3e-4
+  batch_size = 32
+  conv_dim_init = 64
+  epochs = 1
+
+
+  cnn_blocks_grid = [1, 2, 3]
+  dense_layers_grid = [1]
+  filter_multiplier_grid  = [.5, 1]
+  kernel_size_grid = [2, 3]
+  strides_grid = [(1, 1), (2, 2)]
+  dense_output_size_grid = [1024, 2048]
+
+  for cnn_blocks in cnn_blocks_grid:
+    for dense_layers in dense_layers_grid:
+      for filter_multiplier in filter_multiplier_grid:
+        for kernel_size in kernel_size_grid:
+          for strides in strides_grid:
+            for dense_output_size in dense_output_size_grid:
+              ypred = run_model(cnn_blocks, dense_layers, filter_multiplier,
+                                kernel_size, strides, dense_output_size)
+              print_metrics(ypred, ytest)
 
 #print(len(ypred_))
 #print(len(ytest_))
