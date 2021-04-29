@@ -27,7 +27,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score, confusion_m
 # file system
 import os
 
-path_data = "/data2/noses/cnn_data/"
+path_data = "/data2/noses_data/cnn_data/"
 
 """## Functions"""
 

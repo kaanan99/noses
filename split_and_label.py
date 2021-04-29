@@ -32,8 +32,8 @@ import sys
 
 # paths
 # matthew
-path_data = "/data2/noses/cnn_data/"
-path_images = "/data2/noses/image_data/"
+path_data = "/data2/noses_data/cnn_data/"
+path_images = "/data2/noses_data/image_data/"
 
 print(os.getcwd())
 

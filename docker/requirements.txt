@@ -1,5 +1,3 @@
-rasterio
-scipy
 matplotlib
 pyproj
 pandas

@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build docker -t noses/latest
+docker build docker -t docker
