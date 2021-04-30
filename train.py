@@ -149,7 +149,7 @@ def run_model(cnn_blocks, dense_layers, filter_multiplier,
             validation_split=.1, verbose=True)
   res = model.evaluate(Xtest, ytest); loss = res[0]; acc = res[1]
   ypred = model.predict(Xtest)
-  print("%d CCP Block(s), %d Dense Layer(s), %dx Filter Multiplier, %d Kernel Size, %s Strides, %d Dense Output Size" %
+  print("%d CCP Block(s), %d Dense Layer(s), %fx Filter Multiplier, %d Kernel Size, %s Strides, %d Dense Output Size" %
         (cnn_blocks, dense_layers, filter_multiplier, kernel_size, strides, dense_output_size),
         "\nLoss:       %f\nAccuracy:   %f" % (loss, acc))
   return ypred
@@ -217,7 +217,7 @@ for thres in thresholds:
   dense_layers_grid = [1]
   filter_multiplier_grid  = [.5, 1]
   kernel_size_grid = [2, 3]
-  strides_grid = [(1, 1), (2, 2)]
+  strides_grid = [(1, 1)]
   dense_output_size_grid = [1024, 2048]
 
   for cnn_blocks in cnn_blocks_grid:
