@@ -1,5 +1,6 @@
 docker run \
   -u $(id -u):$(id -g) \
+  --env="DISPLAY" \
   -e --runtime=nvidia \
   -it \
   -v /data2:/data2 \
