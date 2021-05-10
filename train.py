@@ -6,7 +6,7 @@ path_plots = "/noses/cnn_plots/"
 
 """ User Input """
 # size of dataset - "small", "medium", or "large"
-size = "small"
+size = "large"
 
 # binary or tertiary classificaiton
 binary_flag = True
