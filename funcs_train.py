@@ -23,11 +23,12 @@ LINE_LEN = 26
 lr = 3e-4
 batch_size = 32
 conv_dim_init = 64
-epochs = 20
+epochs = 1
+dp_rate = .5
 
 
 def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_size=3,
-                 strides=(1, 1), dense_output_size =1024, classification="binary"):
+                 strides=(1, 1), dense_output_size =1024, dropout = True, classification="binary"):
   model = keras.models.Sequential()
   for i in range(cnn_blocks):
     # conv_output_dim = int((conv_dim_init * filter_multiplier) * (i + 1))
@@ -37,7 +38,7 @@ def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_siz
     model.add(layers.Conv2D(filters=conv_output_dim, kernel_size=kernel_size,
                             strides=strides, activation='relu', padding='same'))
     model.add(layers.MaxPooling2D((2, 2), padding='same'))
-
+    if dropout == True: model.add(layers.Dropout(dp_rate))
   model.add(layers.Flatten())
   for i in range(dense_layers):
     model.add(layers.Dense(units=conv_output_dim*96/(2**cnn_blocks)/(2*(i+1)), activation='relu'))
@@ -56,24 +57,33 @@ def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_siz
   return model
 
 
-def run_model(Xtrain, ytrain, Xtest, ytest,
-              cnn_blocks, dense_layers, filter_multiplier, kernel_size, strides,
-              dense_output_size, threshold_min):
-  model = create_model(cnn_blocks, dense_layers, filter_multiplier, kernel_size, strides, dense_output_size)
+def run_model(train_test_dict,
+              threshold_min, cnn_blocks, dense_layers, filter_multiplier,
+              kernel_size, strides, dense_output_size, dropout_flag, model_num):
+  Xtrain = train_test_dict["Xtrain"]
+  ytrain = train_test_dict["ytrain"]
+  Xtest = train_test_dict["Xtest"]
+  ytest = train_test_dict["ytest"]
+  Xtest_no_filter = train_test_dict["Xtest_no_filter"]
+  ytest_no_filter = train_test_dict["ytest_no_filter"]
+
+  model = create_model(cnn_blocks, dense_layers, filter_multiplier, kernel_size,
+                       strides, dense_output_size, dropout_flag)
   model.fit(Xtrain, ytrain, batch_size=batch_size, epochs=epochs, validation_split=.1, verbose=False)
   # print(model.summary())
   res = model.evaluate(Xtest, ytest); loss = res[0]; acc = res[1]
   ypred = model.predict(Xtest)
-  print_model_params(cnn_blocks, dense_layers, filter_multiplier, kernel_size,
-                        strides, dense_output_size, threshold_min)
-  return ypred
+  ypred_no_filter = model.predict(Xtest_no_filter)
+  print_model_params(threshold_min, cnn_blocks, dense_layers, filter_multiplier,
+                        kernel_size, strides, dense_output_size, dropout_flag, model_num)
+  return ypred, ypred_no_filter
 
 
-def print_model_params(cnn_blocks, dense_layers, filter_multiplier, kernel_size,
-                        strides, dense_output_size, threshold_min):
+def print_model_params(threshold_min, cnn_blocks, dense_layers, filter_multiplier,
+                        kernel_size, strides, dense_output_size, dropout_flag, model_num):
     line = " " + "-" * LINE_LEN; len_line = len(line)
     print(line)
-    s = "| Model Parameters"; print(get_string(s, len_line))
+    s = "| Model Number: %d" % model_num; print(get_string(s, len_line))
     print(line)
     s = "| CCP Block(s) %8d" % cnn_blocks; print(get_string(s, len_line))
     s = "| Dense Layer(s) %6d" % dense_layers; print(get_string(s, len_line))
@@ -82,10 +92,13 @@ def print_model_params(cnn_blocks, dense_layers, filter_multiplier, kernel_size,
     s = "| Strides %13d" % strides[0]; print(get_string(s, len_line))
     s = "| Dense Output Size %5d" % dense_output_size; print(get_string(s, len_line))
     s = "| Threshold Min" + "\t     " + '{:.2f}'.format(threshold_min).lstrip('0'); print(get_string(s, len_line))
+    if dropout_flag == True: x = "Y"
+    else: x = "N"
+    s = "| Dropout? %12s" % x; print(get_string(s, len_line))
     print(line)
 
-def print_metrics(ypred, ytest):
-  ypred_, ytest_ = convert_arrs(ypred, ytest)
+def print_metrics(ypred, ytest, no_filter=False, binary_flag=True):
+  ypred_, ytest_ = convert_arrs(ypred, ytest, binary_flag)
   acc = accuracy_score(ytest_, ypred_)
   f1 = f1_score(np.array(ytest_), ypred_, labels=np.unique(ytest_), average="weighted")
   precision = precision_score(np.array(ytest_), ypred_, labels=np.unique(ypred_), average="weighted")
@@ -93,30 +106,39 @@ def print_metrics(ypred, ytest):
 
   line = " " + "-" * LINE_LEN; len_line = len(line)
   print(line)
-  s = "| Test Metrics"; print(get_string(s, len_line))
+  if no_filter == False: s = "| Test Metrics"; print(get_string(s, len_line))
+  else: s = "| Test Metrics - No Filter"; print(get_string(s, len_line))
   print(line)
   s = "| Accuracy %14.4f" % acc; print(get_string(s, len_line))
-  s = "| F1 Score %14.4f" % f1; print(get_string(s, len_line))
   s = "| Precision %13.4f" % precision; print(get_string(s, len_line))
   s = "| Recall %16.4f" % recall; print(get_string(s, len_line))
-  print(line); print(line)
-  s = "| Confusion Matrix"; print(get_string(s, len_line))
-  cm = confusion_matrix(ytest_, ypred_)
-  print_cm(cm, labels=["0", "1"])
+  s = "| F1 Score %14.4f" % f1; print(get_string(s, len_line))
+  print(line)
+
   return ypred_, ytest_
 
+def print_confusion_matrix(ytest_, ypred_, binary_flag):
+    line = " " + "-" * LINE_LEN; len_line = len(line)
+    print(line)
+    s = "| Confusion Matrix "; print(get_string(s, len_line))
+    cm = confusion_matrix(ytest_, ypred_)
+    if binary_flag == True: cm_labels = ["0", "1"]
+    else: cm_labels = ["0", "1", "2"]
+    print_cm(cm, labels=cm_labels)
 
 """ Train-Test Split """
 def train_test_split(imgs, bb_data, labels, threshold_min):
-    train_indices, test_indices, seal_percents = get_indices_and_percents(bb_data, threshold_min)
-    Xtrain, ytrain = preprocessing(imgs[train_indices], labels[train_indices])
-    Xtest, ytest = preprocessing(imgs[test_indices], labels[test_indices])
-    return Xtrain, ytrain, Xtest, ytest, seal_percents
+    d = {}
+    train_indices, test_indices, test_indices_no_filter, seal_percents = get_indices_and_percents(bb_data, threshold_min)
+    d["Xtrain"], d["ytrain"] = preprocessing(imgs[train_indices], labels[train_indices])
+    d["Xtest"], d["ytest"] = preprocessing(imgs[test_indices], labels[test_indices])
+    d["Xtest_no_filter"], d["ytest_no_filter"] = preprocessing(imgs[test_indices_no_filter], labels[test_indices_no_filter])
+    return d, seal_percents
 
 
 def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
   # get indices for images w seals
-  indices_w_seal = []
+  indices_w_seal = []; indices_w_seal_no_filter = []
   seal_percents = []
   for i in range(len(bb_data)):
     df_subimg = bb_data[i]
@@ -125,24 +147,36 @@ def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
       if seal_percent > threshold_min:
           indices_w_seal.append(i)
           seal_percents.append(seal_percent)
+      indices_w_seal_no_filter.append(i)
 
+  # get num with seal, num without seal
   num_w_seal = len(indices_w_seal)
   size_dataset = int(num_w_seal * 10/4) # size for dataset with 40% of images containing seals
   num_wo_seal = size_dataset - num_w_seal
+
+  # get num with seal, num without seal (no filter)
+  num_w_seal_no_filter = len(indices_w_seal_no_filter)
+  size_dataset_no_filter = int(num_w_seal_no_filter * 10/4)
+  num_wo_seal_no_filter = size_dataset_no_filter - num_w_seal_no_filter
 
   # get indices for images w/o seals
   all_indices_wo_seal = [x for x in list(range(len(bb_data))) if x not in indices_w_seal]
   indices_wo_seal = random.sample(all_indices_wo_seal, num_wo_seal)
 
-  print("Number of sub images for dataset with 40% images containing seals", size_dataset)
-  print("Number of sub images with a seal", num_w_seal)
-  print("Number of sub images without a seal", num_wo_seal)
-  print()
+  # get indices for images w/o seals (no filter)
+  all_indices_wo_seal_no_filter = [x for x in list(range(len(bb_data))) if x not in indices_w_seal_no_filter]
+  indices_wo_seal_no_filter = random.sample(all_indices_wo_seal_no_filter, num_wo_seal_no_filter)
 
+  # numbers to get train test split
   num_train_w_seal = round((1 - test_frac) * num_w_seal)
   num_train_wo_seal = round((1 - test_frac) * num_wo_seal)
   num_test_wo_seal = size_dataset - num_w_seal - num_train_wo_seal
 
+  # numbers to get train test split (no filter)
+  num_train_w_seal_no_filter = round((1 - test_frac) * num_w_seal_no_filter)
+  num_train_wo_seal_no_filter = round((1 - test_frac) * num_wo_seal_no_filter)
+
+  # seal percents
   seal_percents = np.array(seal_percents[num_train_w_seal:])
   seal_percents = np.pad(seal_percents, (0, num_test_wo_seal), 'constant')
   # train test split of indices, each with 40% of sub imgs containing seals
@@ -150,42 +184,61 @@ def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
                                   np.array(indices_wo_seal[:num_train_wo_seal])))
   test_indices = np.concatenate((np.array(indices_w_seal[num_train_w_seal:]),
                                   np.array(indices_wo_seal[num_train_wo_seal:])))
-  return train_indices, test_indices, seal_percents
+  test_indices_no_filter = np.concatenate((np.array(indices_w_seal_no_filter[num_train_w_seal_no_filter:]),
+                                  np.array(indices_wo_seal_no_filter[num_train_wo_seal_no_filter:])))
+
+  return train_indices, test_indices, test_indices_no_filter, seal_percents
 
 
 def plot_acc_buckets(ytest, ypred, percents, fname):
-    acc_dict = {}
-    buckets = ["0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7", "7-8", "8-9", "9-10"]
+    d = {}
+    buckets = ["0%", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
     for bucket in buckets:
-        acc_dict[bucket] = {"total": 0, "sum": 0}
+        d[bucket] = {"ytrue": [], "ypred": []}
     for elem in zip(ytest, ypred, percents):
         label = elem[0]; prediction = elem[1]; percent = elem[2]
-        if percent < .1: bucket = "0-1"
-        elif percent < .2: bucket = "1-2"
-        elif percent < .3: bucket = "2-3"
-        elif percent < .4: bucket = "3-4"
-        elif percent < .5: bucket = "4-5"
-        elif percent < .6: bucket = "5-6"
-        elif percent < .7: bucket = "6-7"
-        elif percent < .8: bucket = "7-8"
-        elif percent < .9: bucket = "8-9"
-        else: bucket = "9-10"
-        if prediction == label:
-            acc_dict[bucket]["sum"] += 1
-        acc_dict[bucket]["total"] += 1
+        if percent == 0: bucket = "0%"
+        elif percent < .1: bucket = "0-10%"
+        elif percent < .2: bucket = "10-20%"
+        elif percent < .3: bucket = "20-30%"
+        elif percent < .4: bucket = "30-40%"
+        elif percent < .5: bucket = "40-50%"
+        elif percent < .6: bucket = "50-60%"
+        elif percent < .7: bucket = "60-70%"
+        elif percent < .8: bucket = "70-80%"
+        elif percent < .9: bucket = "80-90%"
+        else: bucket = "90-100%"
+        d[bucket]["ytrue"].append(label)
+        d[bucket]["ypred"].append(prediction)
 
-    for bucket, dict in acc_dict.items():
-        if dict['total'] == 0:
-            acc = 0
+    acc_dict = {}; prec_dict = {}; rec_dict = {}; f1_dict = {}
+    for bucket, dict in d.items():
+        if len(d[bucket]["ytrue"]) == 0:
+            acc_dict[bucket] = 0
+            prec_dict[bucket] = 0
+            rec_dict[bucket] = 0
+            f1_dict[bucket] = 0
         else:
-            acc = dict['sum'] / dict['total']
-        acc_dict[bucket] = acc
+            acc_dict[bucket] = accuracy_score(d[bucket]["ytrue"], d[bucket]["ypred"])
+            prec_dict[bucket] = precision_score(d[bucket]["ytrue"], d[bucket]["ypred"], zero_division=0)
+            rec_dict[bucket] = recall_score(d[bucket]["ytrue"], d[bucket]["ypred"], zero_division=0)
+            f1_dict[bucket] = f1_score(d[bucket]["ytrue"], d[bucket]["ypred"], zero_division=0)
 
     buckets = list(acc_dict.keys())
     acc = list(acc_dict.values())
+    prec = list(prec_dict.values())
+    rec = list(rec_dict.values())
+    #f1 = list(f1_dict.values())
+
     plt.bar(range(len(acc_dict)), acc, tick_label=buckets)
-    plt.savefig(fname)
-    return acc_dict
+    plt.xticks(rotation=45)
+    plt.savefig(fname + "-a", edgecolor="r")
+    plt.bar(range(len(prec_dict)), prec, tick_label=buckets)
+    plt.xticks(rotation=45)
+    plt.savefig(fname + "-p")
+    plt.bar(range(len(rec_dict)), rec, tick_label=buckets)
+    plt.xticks(rotation=45)
+    plt.savefig(fname + "-r")
 
 def preprocessing(X_init, y_init):
   X_init = X_init[:] / 255.
@@ -194,7 +247,7 @@ def preprocessing(X_init, y_init):
   X = []
   y = []
   for Xi, yi in zip(X_init, y_init):
-    im = tf.image.resize(Xi, (96, 96))
+    im = tf.image.resize(Xi, (150, 150))
     X.append(im)
     y.append(yi)
 
@@ -212,11 +265,18 @@ def get_seal_percent(df_subimg):
 
 # convert ypred back to predictions of 0, 1, 2
 # convert ytest from tensor to list
-def convert_arrs(ypred, ytest):
+def convert_arrs(ypred, ytest, binary_flag=True):
   ypred_ = []
-  for i in range(len(ypred)):
-    confidence_arr = list(ypred[i])
-    ypred_.append(np.argmax(confidence_arr))
+  if binary_flag == True:
+      for i in range(len(ypred)):
+          if ypred[i] > .5:
+              ypred_.append(1)
+          else:
+              ypred_.append(0)
+  else:
+      for i in range(len(ypred)):
+        confidence_arr = list(ypred[i])
+        ypred_.append(np.argmax(confidence_arr))
   ytest_ = []
   for i in range(len(ytest)):
     ytest_.append(int(ytest[i]))
