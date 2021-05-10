@@ -41,7 +41,7 @@ def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_siz
     if dropout == True: model.add(layers.Dropout(dp_rate))
   model.add(layers.Flatten())
   for i in range(dense_layers):
-    model.add(layers.Dense(units=conv_output_dim*96/(2**cnn_blocks)/(2*(i+1)), activation='relu'))
+    model.add(layers.Dense(units=conv_output_dim*(round(150/strides[0]/(2**cnn_blocks))**2)/(2*(i+1)), activation='relu'))
     #model.add(layers.Dense(units=dense_output_size , activation='relu'))
 
   if classification == 'binary':
