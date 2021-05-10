@@ -23,7 +23,7 @@ LINE_LEN = 26
 lr = 3e-4
 batch_size = 32
 conv_dim_init = 64
-epochs = 1
+epochs = 20
 dp_rate = .5
 
 
@@ -76,6 +76,9 @@ def run_model(train_test_dict,
   ypred_no_filter = model.predict(Xtest_no_filter)
   print_model_params(threshold_min, cnn_blocks, dense_layers, filter_multiplier,
                         kernel_size, strides, dense_output_size, dropout_flag, model_num)
+
+  #
+  print(model.summary())
   return ypred, ypred_no_filter
 
 

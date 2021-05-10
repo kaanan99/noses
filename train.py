@@ -63,7 +63,7 @@ model_params_grid = list(itertools.product(threshold_min_grid, cnn_blocks_grid,
                                         dense_size_grid, dropout_flag_grid))
 first_pass = True
 prev_threshold_min = threshold_min_grid[0]
-model_num = 1
+model_num = 31
 for model_params in model_params_grid:
     threshold_min = model_params[0]
     cnn_blocks = model_params[1]
