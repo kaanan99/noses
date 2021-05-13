@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import random
 import itertools
+import math
 
 # cnn
 import tensorflow as tf
@@ -24,7 +25,7 @@ lr = 3e-4
 batch_size = 32
 conv_dim_init = 64
 epochs = 25
-dp_rate = .5
+dp_rate = .1
 
 
 def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_size=3,
@@ -41,7 +42,10 @@ def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_siz
     if dropout == True: model.add(layers.Dropout(dp_rate))
   model.add(layers.Flatten())
   for i in range(dense_layers):
-    model.add(layers.Dense(units=conv_output_dim*max(1, round(150/strides[0]**(cnn_blocks*3)))/(2*(i+1)),
+    if i == 0:
+      model.add(layers.Dense(units=conv_output_dim * max(1, (math.ceil(150 / strides[0] ** (cnn_blocks * 3)))**2), activation='relu'))
+    else:
+      model.add(layers.Dense(units=conv_output_dim * max(1, round(150/strides[0]**(cnn_blocks*3)))/(2*i),
                                                   activation='relu'))
     #model.add(layers.Dense(units=dense_output_size , activation='relu'))
 
@@ -59,7 +63,7 @@ def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_siz
 
 
 def run_model(train_test_dict,
-              threshold_min, cnn_blocks, dense_layers, filter_multiplier,
+              threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
               kernel_size, strides, dense_output_size, dropout_flag, model_num):
   Xtrain = train_test_dict["Xtrain"]
   ytrain = train_test_dict["ytrain"]
@@ -75,15 +79,15 @@ def run_model(train_test_dict,
   res = model.evaluate(Xtest, ytest); loss = res[0]; acc = res[1]
   ypred = model.predict(Xtest)
   ypred_no_filter = model.predict(Xtest_no_filter)
-  print_model_params(threshold_min, cnn_blocks, dense_layers, filter_multiplier,
+  print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
                         kernel_size, strides, dense_output_size, dropout_flag, model_num)
 
   #
-  print(model.summary())
+  #print(model.summary())
   return ypred, ypred_no_filter
 
 
-def print_model_params(threshold_min, cnn_blocks, dense_layers, filter_multiplier,
+def print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
                         kernel_size, strides, dense_output_size, dropout_flag, model_num):
     line = " " + "-" * LINE_LEN; len_line = len(line)
     print(line)
@@ -94,8 +98,15 @@ def print_model_params(threshold_min, cnn_blocks, dense_layers, filter_multiplie
     s = "| Filter Multiplier %3dx" % filter_multiplier; print(get_string(s, len_line))
     s = "| Kernel Size %9d" % kernel_size; print(get_string(s, len_line))
     s = "| Strides %13d" % strides[0]; print(get_string(s, len_line))
-    s = "| Dense Output Size %5d" % dense_output_size; print(get_string(s, len_line))
+
+    s = "| Dense Output Size %5d" % (int(int((conv_dim_init * filter_multiplier) * (2 ** (cnn_blocks-1))) *
+                                         max(1, (math.ceil(150 / strides[0] ** (cnn_blocks * 3)))**2))); print(get_string(s, len_line))
+    #s = "| Dense Output Size %5d" % dense_output_size; print(get_string(s, len_line))
     s = "| Threshold Min" + "\t     " + '{:.2f}'.format(threshold_min).lstrip('0'); print(get_string(s, len_line))
+    if isinstance(threshold_max, str):
+        s = "| Threshold Max" + "\t     " + "N/A"; print(get_string(s, len_line))
+    else:
+        s = "| Threshold Max" + "\t     " + '{:.2f}'.format(threshold_max).lstrip('0'); print(get_string(s, len_line))
     if dropout_flag == True: x = "Y"
     else: x = "N"
     s = "| Dropout? %12s" % x; print(get_string(s, len_line))
@@ -224,9 +235,9 @@ def plot_acc_buckets(ytest, ypred, percents, fname):
             f1_dict[bucket] = 0
         else:
             acc_dict[bucket] = accuracy_score(d[bucket]["ytrue"], d[bucket]["ypred"])
-            prec_dict[bucket] = precision_score(d[bucket]["ytrue"], d[bucket]["ypred"], zero_division=0)
-            rec_dict[bucket] = recall_score(d[bucket]["ytrue"], d[bucket]["ypred"], zero_division=0)
-            f1_dict[bucket] = f1_score(d[bucket]["ytrue"], d[bucket]["ypred"], zero_division=0)
+            prec_dict[bucket] = precision_score(d[bucket]["ytrue"], d[bucket]["ypred"], average='weighted', zero_division=0)
+            rec_dict[bucket] = recall_score(d[bucket]["ytrue"], d[bucket]["ypred"], average='weighted', zero_division=0)
+            f1_dict[bucket] = f1_score(d[bucket]["ytrue"], d[bucket]["ypred"], average='weighted', zero_division=0)
 
     buckets = list(acc_dict.keys())
     acc = list(acc_dict.values())
@@ -288,14 +299,14 @@ def convert_arrs(ypred, ytest, binary_flag=True):
 
 
 """ Extract Labels """
-def get_labels_tertiary(bb_data, threshold = 1):
+def get_labels_tertiary(bb_data, min_threshold = 0.3, max_threshold = 0.8):
   labels = []
   for df_subimg in bb_data:
     if not isinstance(df_subimg, type(None)):
       seal_percent = get_seal_percent(df_subimg)
-      if seal_percent > threshold:
+      if seal_percent > max_threshold:
         val = 2
-      else:
+      elif seal_percent > min_threshold:
         val = 1
     else:
       val = 0
@@ -304,13 +315,16 @@ def get_labels_tertiary(bb_data, threshold = 1):
   return labels
 
 
-def get_labels_binary(bb_data):
+def get_labels_binary(bb_data, min_threshold = 0.3):
     labels = []
     for df_subimg in bb_data:
       if not isinstance(df_subimg, type(None)):
+        if get_seal_percent(df_subimg) > min_threshold:
           val = 1
-      else:
+        else:
           val = 0
+      else:
+        val = 0
       labels.append(val)
     labels = np.array(labels)
     return labels
