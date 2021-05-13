@@ -245,15 +245,29 @@ def plot_acc_buckets(ytest, ypred, percents, fname):
     rec = list(rec_dict.values())
     #f1 = list(f1_dict.values())
 
-    plt.bar(range(len(acc_dict)), acc, tick_label=buckets)
+    plt.bar(range(len(acc_dict)), acc, tick_label=buckets, color='r')
     plt.xticks(rotation=45)
+    plt.xlabel("% Seal")
+    plt.title("Accuracy")
+    plt.ylim(0, 1)
     plt.savefig(fname + "-a", edgecolor="r")
-    plt.bar(range(len(prec_dict)), prec, tick_label=buckets)
+    plt.close()
+
+    plt.bar(range(len(prec_dict)), prec, tick_label=buckets, color='g')
     plt.xticks(rotation=45)
+    plt.xlabel("% Seal")
+    plt.title("Precision")
+    plt.ylim(0, 1)
     plt.savefig(fname + "-p")
-    plt.bar(range(len(rec_dict)), rec, tick_label=buckets)
+    plt.close()
+
+    plt.bar(range(len(rec_dict)), rec, tick_label=buckets, color='b')
     plt.xticks(rotation=45)
+    plt.xlabel("% Seal")
+    plt.title("Recall")
+    plt.ylim(0, 1)
     plt.savefig(fname + "-r")
+    plt.close()
 
 def preprocessing(X_init, y_init):
   X_init = X_init[:] / 255.
