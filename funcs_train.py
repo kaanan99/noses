@@ -29,7 +29,7 @@ dp_rate = .1
 
 
 def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_size=3,
-                 strides=(1, 1), dense_output_size =1024, dropout = True, classification="binary"):
+                 strides=(1, 1), dropout = True, classification="binary"):
   model = keras.models.Sequential()
   for i in range(cnn_blocks):
     # conv_output_dim = int((conv_dim_init * filter_multiplier) * (i + 1))
@@ -43,11 +43,9 @@ def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_siz
   model.add(layers.Flatten())
   for i in range(dense_layers):
     if i == 0:
-      model.add(layers.Dense(units=conv_output_dim * max(1, (math.ceil(150 / strides[0] ** (cnn_blocks * 3)))**2), activation='relu'))
+      model.add(layers.Dense(units=conv_output_dim * max(1, (math.ceil(150 / strides[0] ** (cnn_blocks * 3))) ** 2), activation='relu'))
     else:
-      model.add(layers.Dense(units=conv_output_dim * max(1, round(150/strides[0]**(cnn_blocks*3)))/(2*i),
-                                                  activation='relu'))
-    #model.add(layers.Dense(units=dense_output_size , activation='relu'))
+      model.add(layers.Dense(units=conv_output_dim * max(1, round(150/ strides[0] ** (cnn_blocks*3))) / (2*i), activation='relu'))
 
   if classification == 'binary':
       model.add(layers.Dense(1, activation='sigmoid', name='z'))
@@ -64,7 +62,7 @@ def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_siz
 
 def run_model(train_test_dict,
               threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
-              kernel_size, strides, dense_output_size, dropout_flag, model_num):
+              kernel_size, strides, dropout_flag, model_num):
   Xtrain = train_test_dict["Xtrain"]
   ytrain = train_test_dict["ytrain"]
   Xtest = train_test_dict["Xtest"]
@@ -73,14 +71,14 @@ def run_model(train_test_dict,
   ytest_no_filter = train_test_dict["ytest_no_filter"]
 
   model = create_model(cnn_blocks, dense_layers, filter_multiplier, kernel_size,
-                       strides, dense_output_size, dropout_flag)
+                       strides, dropout_flag)
   model.fit(Xtrain, ytrain, batch_size=batch_size, epochs=epochs, validation_split=.1, verbose=False)
   # print(model.summary())
   res = model.evaluate(Xtest, ytest); loss = res[0]; acc = res[1]
   ypred = model.predict(Xtest)
   ypred_no_filter = model.predict(Xtest_no_filter)
   print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
-                        kernel_size, strides, dense_output_size, dropout_flag, model_num)
+                        kernel_size, strides, dropout_flag, model_num)
 
   #
   #print(model.summary())
@@ -88,7 +86,7 @@ def run_model(train_test_dict,
 
 
 def print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
-                        kernel_size, strides, dense_output_size, dropout_flag, model_num):
+                        kernel_size, strides, dropout_flag, model_num):
     line = " " + "-" * LINE_LEN; len_line = len(line)
     print(line)
     s = "| Model Number: %d" % model_num; print(get_string(s, len_line))
@@ -98,7 +96,6 @@ def print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, f
     s = "| Filter Multiplier %3dx" % filter_multiplier; print(get_string(s, len_line))
     s = "| Kernel Size %9d" % kernel_size; print(get_string(s, len_line))
     s = "| Strides %13d" % strides[0]; print(get_string(s, len_line))
-
     s = "| Dense Output Size %5d" % (int(int((conv_dim_init * filter_multiplier) * (2 ** (cnn_blocks-1))) *
                                          max(1, (math.ceil(150 / strides[0] ** (cnn_blocks * 3)))**2))); print(get_string(s, len_line))
     #s = "| Dense Output Size %5d" % dense_output_size; print(get_string(s, len_line))
@@ -112,12 +109,11 @@ def print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, f
     s = "| Dropout? %12s" % x; print(get_string(s, len_line))
     print(line)
 
-def print_metrics(ypred, ytest, no_filter=False, binary_flag=True):
-  ypred_, ytest_ = convert_arrs(ypred, ytest, binary_flag)
-  acc = accuracy_score(ytest_, ypred_)
-  f1 = f1_score(np.array(ytest_), ypred_, labels=np.unique(ytest_), average="weighted")
-  precision = precision_score(np.array(ytest_), ypred_, labels=np.unique(ypred_), average="weighted")
-  recall = recall_score(np.array(ytest_), ypred_, labels=np.unique(ypred_), average="weighted")
+def print_metrics(ypred, ytest, no_filter=False):
+  acc = accuracy_score(ytest, ypred)
+  f1 = f1_score(np.array(ytest), ypred, labels=np.unique(ytest), average="weighted")
+  precision = precision_score(np.array(ytest), ypred, labels=np.unique(ypred), average="weighted")
+  recall = recall_score(np.array(ytest), ypred, labels=np.unique(ypred), average="weighted")
 
   line = " " + "-" * LINE_LEN; len_line = len(line)
   print(line)
@@ -130,13 +126,11 @@ def print_metrics(ypred, ytest, no_filter=False, binary_flag=True):
   s = "| F1 Score %14.4f" % f1; print(get_string(s, len_line))
   print(line)
 
-  return ypred_, ytest_
-
-def print_confusion_matrix(ytest_, ypred_, binary_flag):
+def print_confusion_matrix(ytest, ypred, binary_flag):
     line = " " + "-" * LINE_LEN; len_line = len(line)
     print(line)
     s = "| Confusion Matrix "; print(get_string(s, len_line))
-    cm = confusion_matrix(ytest_, ypred_)
+    cm = confusion_matrix(ytest, ypred)
     if binary_flag == True: cm_labels = ["0", "1"]
     else: cm_labels = ["0", "1", "2"]
     print_cm(cm, labels=cm_labels)
@@ -148,13 +142,15 @@ def train_test_split(imgs, bb_data, labels, threshold_min):
     d["Xtrain"], d["ytrain"] = preprocessing(imgs[train_indices], labels[train_indices])
     d["Xtest"], d["ytest"] = preprocessing(imgs[test_indices], labels[test_indices])
     d["Xtest_no_filter"], d["ytest_no_filter"] = preprocessing(imgs[test_indices_no_filter], labels[test_indices_no_filter])
-    return d, seal_percents
+    d["seal_percents"] = seal_percents["filter"]
+    d["seal_percents_no_filter"] = seal_percents["no_filter"]
+    return d
 
 
 def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
   # get indices for images w seals
   indices_w_seal = []; indices_w_seal_no_filter = []
-  seal_percents = []
+  seal_percents = []; seal_percents_no_filter = []
   for i in range(len(bb_data)):
     df_subimg = bb_data[i]
     if not df_subimg is None:
@@ -163,6 +159,7 @@ def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
           indices_w_seal.append(i)
           seal_percents.append(seal_percent)
       indices_w_seal_no_filter.append(i)
+      seal_percents_no_filter.append(seal_percent)
 
   # get num with seal, num without seal
   num_w_seal = len(indices_w_seal)
@@ -190,10 +187,18 @@ def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
   # numbers to get train test split (no filter)
   num_train_w_seal_no_filter = round((1 - test_frac) * num_w_seal_no_filter)
   num_train_wo_seal_no_filter = round((1 - test_frac) * num_wo_seal_no_filter)
+  num_test_wo_seal_no_filter = size_dataset_no_filter - num_w_seal_no_filter - num_train_wo_seal_no_filter
 
   # seal percents
   seal_percents = np.array(seal_percents[num_train_w_seal:])
   seal_percents = np.pad(seal_percents, (0, num_test_wo_seal), 'constant')
+
+  print("num train w seal no filter", num_train_w_seal_no_filter)
+  print("num test wo seal no filter", num_test_wo_seal_no_filter)
+
+  seal_percents_no_filter = np.array(seal_percents_no_filter[num_train_w_seal_no_filter:])
+  seal_percents_no_filter = np.pad(seal_percents_no_filter, (0, num_test_wo_seal_no_filter), 'constant')
+
   # train test split of indices, each with 40% of sub imgs containing seals
   train_indices = np.concatenate((np.array(indices_w_seal[:num_train_w_seal]),
                                   np.array(indices_wo_seal[:num_train_wo_seal])))
@@ -202,10 +207,52 @@ def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
   test_indices_no_filter = np.concatenate((np.array(indices_w_seal_no_filter[num_train_w_seal_no_filter:]),
                                   np.array(indices_wo_seal_no_filter[num_train_wo_seal_no_filter:])))
 
-  return train_indices, test_indices, test_indices_no_filter, seal_percents
+  d_seal_percents = {"filter": seal_percents, "no_filter": seal_percents_no_filter}
+  return train_indices, test_indices, test_indices_no_filter, d_seal_percents
+
+def plot_buckets(ytest, ypred, percents, fname):
+    d = {}
+    buckets = ["0%", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
+    for bucket in buckets:
+        d[bucket] = {"sum": 0, "total": 0}
+    for elem in zip(ytest, ypred, percents):
+        label = elem[0]; prediction = elem[1]; percent = elem[2]
+        if percent == 0: bucket = "0%"
+        elif percent < .1: bucket = "0-10%"
+        elif percent < .2: bucket = "10-20%"
+        elif percent < .3: bucket = "20-30%"
+        elif percent < .4: bucket = "30-40%"
+        elif percent < .5: bucket = "40-50%"
+        elif percent < .6: bucket = "50-60%"
+        elif percent < .7: bucket = "60-70%"
+        elif percent < .8: bucket = "70-80%"
+        elif percent < .9: bucket = "80-90%"
+        else: bucket = "90-100%"
+
+        if prediction == 1:
+            d[bucket]["sum"] += 1
+        d[bucket]["total"] += 1
+
+    new_d = {}
+    for bucket, dict in d.items():
+        if d[bucket]["total"] == 0:
+            new_d[bucket] = 0
+        else:
+            new_d[bucket] = d[bucket]["sum"] / d[bucket]["total"]
+
+    buckets = list(new_d.keys())
+    values = list(new_d.values())
+
+    plt.bar(range(len(new_d)), values, tick_label=buckets, color='r')
+    plt.xticks(rotation=45)
+    plt.xlabel("% Seal In Image")
+    plt.title("% Predicted As A Seal")
+    plt.ylim(0, 1)
+    plt.savefig(fname, edgecolor="r")
+    plt.close()
 
 
-def plot_acc_buckets(ytest, ypred, percents, fname):
+def plot_metric_buckets(ytest, ypred, percents, fname):
     d = {}
     buckets = ["0%", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
     for bucket in buckets:
