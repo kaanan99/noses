@@ -4,7 +4,7 @@ path_data = "/data2/noses_data/cnn_data/"
 # path_plots = "/data2/noses_data/cnn_plots/"
 path_plots = "/noses/cnn_plots/"
 
-""" User Input """
+#-------------------- USER INPUT --------------------
 # size of dataset - "small", "medium", or "large"
 size = "medium"
 
@@ -13,7 +13,7 @@ binary_flag = True
 full_grid_search = False
 
 # grid search parameters
-# threshold_min_grid: probably want to be bigger for binary and small for tertiary
+# note for threshold_min_grid: probably want to be bigger for binary and small for tertiary
 if full_grid_search == True:
     threshold_min_grid = [.7, .8]
     threshold_max_grid = [.7, .8, .9, 1]
@@ -34,9 +34,7 @@ else:
     dropout_flag_grid = [True]
 
 
-""" End of User Input """
-
-""" Load in images and bounding box meta data """
+#-------------------- RETRIEVE DATA --------------------
 if size == "small": f1 = "images_small.npy"; f2 = "bb_data_small.npy"
 if size == "medium": f1 = "images_medium.npy"; f2 = "bb_data_medium.npy"
 if size == "large": f1 = "images.npy"; f2 = "bb_data.npy"
@@ -45,15 +43,17 @@ imgs = np.load(path_data + f1, allow_pickle=True)
 bb_data = np.load(path_data + f2, allow_pickle=True)
 
 
-"""  Grid Search
-Paramterers:
+#-------------------- GRID SEARCH --------------------
+"""Parameters:
 - Threshold Min: minimum percentage to indicate the presence of a seal
 - Threshold Max: maximum percentage to indicate the presence of a partial seal
 - Number of Conv-Conv-Pool (CCP) blocks
 - Number of Dense layers
+- Filter Multiplier: multiplier to determine the dimensionality of the output space
+for the convolutional layers
 - Kernel Size: specifies height and width of convolution window
 - Strides: specifies the strides of the convolution along the height and width
-- Dense Ouput Size: size of output space for the dense layer(s)
+- Dropout Flag: flag indicating whether to dropout
 """
 
 if binary_flag:
@@ -103,9 +103,10 @@ for model_params in model_params_grid:
     model_num += 1
 
 
-"""## Evaluation"""
-
+#-------------------- OLD CODE --------------------
 """
+# Evaluation
+
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.xlabel('iteration')

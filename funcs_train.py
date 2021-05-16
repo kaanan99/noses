@@ -229,7 +229,7 @@ def convert_arrs(ypred, ytest, binary_flag=True):
 # given the bounding box data
 # extracts and returns tertiary labels
 # e.g. 0 == "no seal", 1 == "partial seal", 2 == "full seal"
-def get_labels_tertiary(bb_data, min_threshold = 0.3, max_threshold = 0.8):
+def get_labels_tertiary(bb_data, min_threshold, max_threshold):
   labels = []
   for df_subimg in bb_data:
     if not isinstance(df_subimg, type(None)):
@@ -238,6 +238,8 @@ def get_labels_tertiary(bb_data, min_threshold = 0.3, max_threshold = 0.8):
         val = 2
       elif seal_percent > min_threshold:
         val = 1
+      else:
+        val = 0
     else:
       val = 0
     labels.append(val)
