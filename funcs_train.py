@@ -1,10 +1,14 @@
+#-------------------- IMPORTS --------------------
 # standard
-import numpy as np
-from matplotlib import pyplot as plt
-import pandas as pd
 import random
 import itertools
 import math
+import os
+
+# data
+import numpy as np
+from matplotlib import pyplot as plt
+import pandas as pd
 
 # cnn
 import tensorflow as tf
@@ -12,15 +16,13 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 
-# results
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
+# computing metrics
+from sklearn.metrics import accuracy_score, f1_score, precision_score,  \
+                            recall_score, confusion_matrix
 
-# file system
-import os
+LINE_LEN = 26 # used for pretty printing
 
-LINE_LEN = 26
-
-""" Training """
+#-------------------- TRAINING PARAMS - NOT HYPERRAMATIZED --------------------
 lr = 3e-4
 batch_size = 32
 conv_dim_init = 64
@@ -28,11 +30,13 @@ epochs = 25
 dp_rate = .1
 
 
+#-------------------- MODEL ARCHITECTURE --------------------
+# given the model hyperparameters
+# returns the model to train
 def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_size=3,
                  strides=(1, 1), dropout = True, classification="binary"):
   model = keras.models.Sequential()
   for i in range(cnn_blocks):
-    # conv_output_dim = int((conv_dim_init * filter_multiplier) * (i + 1))
     conv_output_dim = int((conv_dim_init * filter_multiplier) * (2 ** i))
     model.add(layers.Conv2D(filters=conv_output_dim, kernel_size=kernel_size,
                             strides=strides, activation='relu', padding='same'))
@@ -60,6 +64,10 @@ def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_siz
   return model
 
 
+#-------------------- MODEL TRAINING --------------------
+# given the model hyperparameters
+# runs the model
+# returns the predictions for the test set and the test set without a filter
 def run_model(train_test_dict,
               threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
               kernel_size, strides, dropout_flag, model_num):
@@ -73,80 +81,38 @@ def run_model(train_test_dict,
   model = create_model(cnn_blocks, dense_layers, filter_multiplier, kernel_size,
                        strides, dropout_flag)
   model.fit(Xtrain, ytrain, batch_size=batch_size, epochs=epochs, validation_split=.1, verbose=False)
-  # print(model.summary())
   res = model.evaluate(Xtest, ytest); loss = res[0]; acc = res[1]
   ypred = model.predict(Xtest)
   ypred_no_filter = model.predict(Xtest_no_filter)
   print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
                         kernel_size, strides, dropout_flag, model_num)
 
-  #
   #print(model.summary())
   return ypred, ypred_no_filter
 
 
-def print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
-                        kernel_size, strides, dropout_flag, model_num):
-    line = " " + "-" * LINE_LEN; len_line = len(line)
-    print(line)
-    s = "| Model Number: %d" % model_num; print(get_string(s, len_line))
-    print(line)
-    s = "| CCP Block(s) %8d" % cnn_blocks; print(get_string(s, len_line))
-    s = "| Dense Layer(s) %6d" % dense_layers; print(get_string(s, len_line))
-    s = "| Filter Multiplier %3dx" % filter_multiplier; print(get_string(s, len_line))
-    s = "| Kernel Size %9d" % kernel_size; print(get_string(s, len_line))
-    s = "| Strides %13d" % strides[0]; print(get_string(s, len_line))
-    s = "| Dense Output Size %5d" % (int(int((conv_dim_init * filter_multiplier) * (2 ** (cnn_blocks-1))) *
-                                         max(1, (math.ceil(150 / strides[0] ** (cnn_blocks * 3)))**2))); print(get_string(s, len_line))
-    #s = "| Dense Output Size %5d" % dense_output_size; print(get_string(s, len_line))
-    s = "| Threshold Min" + "\t     " + '{:.2f}'.format(threshold_min).lstrip('0'); print(get_string(s, len_line))
-    if isinstance(threshold_max, str):
-        s = "| Threshold Max" + "\t     " + "N/A"; print(get_string(s, len_line))
-    else:
-        s = "| Threshold Max" + "\t     " + '{:.2f}'.format(threshold_max).lstrip('0'); print(get_string(s, len_line))
-    if dropout_flag == True: x = "Y"
-    else: x = "N"
-    s = "| Dropout? %12s" % x; print(get_string(s, len_line))
-    print(line)
-
-def print_metrics(ypred, ytest, no_filter=False):
-  acc = accuracy_score(ytest, ypred)
-  f1 = f1_score(np.array(ytest), ypred, labels=np.unique(ytest), average="weighted")
-  precision = precision_score(np.array(ytest), ypred, labels=np.unique(ypred), average="weighted")
-  recall = recall_score(np.array(ytest), ypred, labels=np.unique(ypred), average="weighted")
-
-  line = " " + "-" * LINE_LEN; len_line = len(line)
-  print(line)
-  if no_filter == False: s = "| Test Metrics"; print(get_string(s, len_line))
-  else: s = "| Test Metrics - No Filter"; print(get_string(s, len_line))
-  print(line)
-  s = "| Accuracy %14.4f" % acc; print(get_string(s, len_line))
-  s = "| Precision %13.4f" % precision; print(get_string(s, len_line))
-  s = "| Recall %16.4f" % recall; print(get_string(s, len_line))
-  s = "| F1 Score %14.4f" % f1; print(get_string(s, len_line))
-  print(line)
-
-def print_confusion_matrix(ytest, ypred, binary_flag):
-    line = " " + "-" * LINE_LEN; len_line = len(line)
-    print(line)
-    s = "| Confusion Matrix "; print(get_string(s, len_line))
-    cm = confusion_matrix(ytest, ypred)
-    if binary_flag == True: cm_labels = ["0", "1"]
-    else: cm_labels = ["0", "1", "2"]
-    print_cm(cm, labels=cm_labels)
-
-""" Train-Test Split """
+#-------------------- TRAIN TEST SPLIT --------------------
+# given the images, the bounding box data, and the labels
+# preprocceses the data and
+# returns a dictionary containing the train test split
+# and the seal percentages for the test set with a filter and without a filter
 def train_test_split(imgs, bb_data, labels, threshold_min):
-    d = {}
-    train_indices, test_indices, test_indices_no_filter, seal_percents = get_indices_and_percents(bb_data, threshold_min)
-    d["Xtrain"], d["ytrain"] = preprocessing(imgs[train_indices], labels[train_indices])
-    d["Xtest"], d["ytest"] = preprocessing(imgs[test_indices], labels[test_indices])
-    d["Xtest_no_filter"], d["ytest_no_filter"] = preprocessing(imgs[test_indices_no_filter], labels[test_indices_no_filter])
-    d["seal_percents"] = seal_percents["filter"]
-    d["seal_percents_no_filter"] = seal_percents["no_filter"]
-    return d
+    train_test = {}
+    indices_and_percents = get_indices_and_percents(bb_data, threshold_min)
+    train_indices = indices_and_percents["train_indices"]
+    test_indices = indices_and_percents["test_indices"]
+    test_indices_no_filter = indices_and_percents["test_indices_no_filter"]
+    train_test["Xtrain"], train_test["ytrain"] = preprocessing(imgs[train_indices], labels[train_indices])
+    train_test["Xtest"], train_test["ytest"] = preprocessing(imgs[test_indices], labels[test_indices])
+    train_test["Xtest_no_filter"], train_test["ytest_no_filter"] = preprocessing(imgs[test_indices_no_filter], labels[test_indices_no_filter])
+    train_test["seal_percents"] = indices_and_percents["seal_percents"]
+    train_test["seal_percents_no_filter"] = indices_and_percents["seal_percents_no_filter"]
+    return train_test
 
 
+# given the bounding box data and the thresholds
+# returns the indices for the train test split
+# and the seal percentages for the test set with a filter and without a filter
 def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
   # get indices for images w seals
   indices_w_seal = []; indices_w_seal_no_filter = []
@@ -193,9 +159,6 @@ def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
   seal_percents = np.array(seal_percents[num_train_w_seal:])
   seal_percents = np.pad(seal_percents, (0, num_test_wo_seal), 'constant')
 
-  print("num train w seal no filter", num_train_w_seal_no_filter)
-  print("num test wo seal no filter", num_test_wo_seal_no_filter)
-
   seal_percents_no_filter = np.array(seal_percents_no_filter[num_train_w_seal_no_filter:])
   seal_percents_no_filter = np.pad(seal_percents_no_filter, (0, num_test_wo_seal_no_filter), 'constant')
 
@@ -207,10 +170,211 @@ def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
   test_indices_no_filter = np.concatenate((np.array(indices_w_seal_no_filter[num_train_w_seal_no_filter:]),
                                   np.array(indices_wo_seal_no_filter[num_train_wo_seal_no_filter:])))
 
-  d_seal_percents = {"filter": seal_percents, "no_filter": seal_percents_no_filter}
-  return train_indices, test_indices, test_indices_no_filter, d_seal_percents
+  return_dict = {"train_indices": train_indices, "test_indices": test_indices,
+                 "test_indices_no_filter": test_indices_no_filter,
+                 "seal_percents": seal_percents, "seal_percents_no_filter": seal_percents_no_filter}
 
-def plot_buckets(ytest, ypred, percents, fname):
+  return return_dict
+
+
+# given the df for a subimg
+# returns the highest percentage seal found within the image
+def get_seal_percent(df_subimg):
+    seal_percents = []
+    for i in df_subimg.itertuples():
+      seal_percents.append(i[3])
+    return max(seal_percents)
+
+
+# data preprocessing
+def preprocessing(X_init, y_init):
+  X_init = X_init[:] / 255. # normalizes image array
+  y_init = y_init[:] / 1.
+
+  X = []
+  y = []
+  for Xi, yi in zip(X_init, y_init):
+    im = tf.image.resize(Xi, (150, 150))
+    X.append(im)
+    y.append(yi)
+
+  X = tf.stack(X)
+  y = tf.stack(y)
+  return X, y
+
+
+#-------------------- CONVERTING PREDICTIONS --------------------
+# convert ypred from confidence values to classifications
+# (e.g. for binary: [.55 .45] -> [0 1])
+# convert ytest from tensor to list
+def convert_arrs(ypred, ytest, binary_flag=True):
+  ypred_ = []
+  if binary_flag == True:
+      for i in range(len(ypred)):
+          if ypred[i] > .5:
+              ypred_.append(1)
+          else:
+              ypred_.append(0)
+  else:
+      for i in range(len(ypred)):
+        confidence_arr = list(ypred[i])
+        ypred_.append(np.argmax(confidence_arr))
+  ytest_ = []
+  for i in range(len(ytest)):
+    ytest_.append(int(ytest[i]))
+  return ypred_, ytest_
+
+
+#-------------------- EXTRACTING LABELS --------------------
+# given the bounding box data
+# extracts and returns tertiary labels
+# e.g. 0 == "no seal", 1 == "partial seal", 2 == "full seal"
+def get_labels_tertiary(bb_data, min_threshold = 0.3, max_threshold = 0.8):
+  labels = []
+  for df_subimg in bb_data:
+    if not isinstance(df_subimg, type(None)):
+      seal_percent = get_seal_percent(df_subimg)
+      if seal_percent > max_threshold:
+        val = 2
+      elif seal_percent > min_threshold:
+        val = 1
+    else:
+      val = 0
+    labels.append(val)
+  labels = np.array(labels)
+  return labels
+
+
+# given the bounding box data
+# extracts and returns binary labels
+# e.g. 0 == "no seal", 1 == "seal"
+def get_labels_binary(bb_data, min_threshold = 0.3):
+    labels = []
+    for df_subimg in bb_data:
+      if not isinstance(df_subimg, type(None)):
+        if get_seal_percent(df_subimg) > min_threshold:
+          val = 1
+        else:
+          val = 0
+      else:
+        val = 0
+      labels.append(val)
+    labels = np.array(labels)
+    return labels
+
+
+#-------------------- PRETTY PRINTING --------------------
+# given the model hyperparameters
+# pretty prints the hyperparamaters
+def print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
+                        kernel_size, strides, dropout_flag, model_num):
+    line = " " + "-" * LINE_LEN; len_line = len(line)
+    print(line)
+    s = "| Model Number: %d" % model_num; print(get_string(s, len_line))
+    print(line)
+    s = "| CCP Block(s) %8d" % cnn_blocks; print(get_string(s, len_line))
+    s = "| Dense Layer(s) %6d" % dense_layers; print(get_string(s, len_line))
+    s = "| Filter Multiplier %3dx" % filter_multiplier; print(get_string(s, len_line))
+    s = "| Kernel Size %9d" % kernel_size; print(get_string(s, len_line))
+    s = "| Strides %13d" % strides[0]; print(get_string(s, len_line))
+    s = "| Dense Output Size %5d" % (int(int((conv_dim_init * filter_multiplier) * (2 ** (cnn_blocks-1))) *
+                                         max(1, (math.ceil(150 / strides[0] ** (cnn_blocks * 3)))**2))); print(get_string(s, len_line))
+    #s = "| Dense Output Size %5d" % dense_output_size; print(get_string(s, len_line))
+    s = "| Threshold Min" + "\t     " + '{:.2f}'.format(threshold_min).lstrip('0'); print(get_string(s, len_line))
+    if isinstance(threshold_max, str):
+        s = "| Threshold Max" + "\t     " + "N/A"; print(get_string(s, len_line))
+    else:
+        s = "| Threshold Max" + "\t     " + '{:.2f}'.format(threshold_max).lstrip('0'); print(get_string(s, len_line))
+    if dropout_flag == True: x = "Y"
+    else: x = "N"
+    s = "| Dropout? %12s" % x; print(get_string(s, len_line))
+    print(line)
+
+
+# given the predicitons and labels for the test set
+# computes and prints the resulting test metrics
+def print_metrics(ypred, ytest, no_filter=False):
+  acc = accuracy_score(ytest, ypred)
+  f1 = f1_score(np.array(ytest), ypred, labels=np.unique(ytest), average="weighted")
+  precision = precision_score(np.array(ytest), ypred, labels=np.unique(ypred), average="weighted")
+  recall = recall_score(np.array(ytest), ypred, labels=np.unique(ypred), average="weighted")
+
+  line = " " + "-" * LINE_LEN; len_line = len(line)
+  print(line)
+  if no_filter == False: s = "| Test Metrics"; print(get_string(s, len_line))
+  else: s = "| Test Metrics - No Filter"; print(get_string(s, len_line))
+  print(line)
+  s = "| Accuracy %14.4f" % acc; print(get_string(s, len_line))
+  s = "| Precision %13.4f" % precision; print(get_string(s, len_line))
+  s = "| Recall %16.4f" % recall; print(get_string(s, len_line))
+  s = "| F1 Score %14.4f" % f1; print(get_string(s, len_line))
+  print(line)
+
+
+# given the predictions and labels for the test set with a filter
+# pretty prints the confusion matrix
+def print_confusion_matrix(ytest, ypred, binary_flag):
+    line = " " + "-" * LINE_LEN; len_line = len(line)
+    print(line)
+    s = "| Confusion Matrix "; print(get_string(s, len_line))
+    cm = confusion_matrix(ytest, ypred)
+    if binary_flag == True: labels = ["0", "1"]
+    else: labels = ["0", "1", "2"]
+
+    columnwidth = max([len(x) for x in labels] + [5])  # 5 is value length
+    empty_cell = " " * columnwidth
+
+    line = " " + "-" * 26
+    print(line)
+    # Begin CHANGES
+    fst_empty_cell = (columnwidth-3)//2 * " " + "t/p" + (columnwidth-3)//2 * " "
+
+    if len(fst_empty_cell) < len(empty_cell):
+        fst_empty_cell = " " * (len(empty_cell) - len(fst_empty_cell)) + fst_empty_cell
+    # Print header
+    print("|    " + fst_empty_cell, end=" ")
+    # End CHANGES
+
+    s_end = "\t   |"
+    for label in labels:
+        if label == labels[len(labels) - 1]:
+            print("%{0}s".format(columnwidth) % label, end=s_end)
+        else:
+            print("%{0}s".format(columnwidth) % label, end=" ")
+
+
+    print()
+    # Print rows
+    hide_zeroes=False; hide_diagonal=False; hide_threshold=None
+    for i, label1 in enumerate(labels):
+        print("|    %{0}s".format(columnwidth) % label1, end=" ")
+        for j in range(len(labels)):
+            cell = "%{0}d".format(columnwidth) % cm[i, j]
+            if hide_zeroes:
+                cell = cell if float(cm[i, j]) != 0 else empty_cell
+            if hide_diagonal:
+                cell = cell if i != j else empty_cell
+            if hide_threshold:
+                cell = cell if cm[i, j] > hide_threshold else empty_cell
+            if j == 1:
+                print(cell, end=s_end)
+            else:
+                print(cell, end=" ")
+        print()
+    print(line)
+    # print_cm(cm, labels=cm_labels)
+
+
+# helper function for various pretty printing functions
+def get_string(s, len_line):
+    num_spaces = len_line - len(s)
+    return s + ' ' * num_spaces + "|"
+
+
+#-------------------- MODEL PLOTTING --------------------
+# given the predictions and labels for the test set with no filter
+# saves a bar plot for the % predicted as a seal over different seal percentage buckets
+def plot_buckets(ypred, ytest, percents, fname):
     d = {}
     buckets = ["0%", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
     for bucket in buckets:
@@ -240,9 +404,7 @@ def plot_buckets(ytest, ypred, percents, fname):
         else:
             new_d[bucket] = d[bucket]["sum"] / d[bucket]["total"]
 
-    buckets = list(new_d.keys())
-    values = list(new_d.values())
-
+    buckets = list(new_d.keys()); values = list(new_d.values())
     plt.bar(range(len(new_d)), values, tick_label=buckets, color='r')
     plt.xticks(rotation=45)
     plt.xlabel("% Seal In Image")
@@ -252,7 +414,12 @@ def plot_buckets(ytest, ypred, percents, fname):
     plt.close()
 
 
-def plot_metric_buckets(ytest, ypred, percents, fname):
+#-------------------- OLD CODE --------------------
+"""
+# NO LONGER USED - REPLACED BY plot_buckets()
+# given the predictions and labels for the test set with no filter
+# saves a bar plot for several test metrics different seal percentage buckets
+def plot_metric_buckets(ypred, ytest, percents, fname):
     d = {}
     buckets = ["0%", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
     for bucket in buckets:
@@ -279,12 +446,12 @@ def plot_metric_buckets(ytest, ypred, percents, fname):
             acc_dict[bucket] = 0
             prec_dict[bucket] = 0
             rec_dict[bucket] = 0
-            f1_dict[bucket] = 0
+            # f1_dict[bucket] = 0
         else:
             acc_dict[bucket] = accuracy_score(d[bucket]["ytrue"], d[bucket]["ypred"])
             prec_dict[bucket] = precision_score(d[bucket]["ytrue"], d[bucket]["ypred"], average='weighted', zero_division=0)
             rec_dict[bucket] = recall_score(d[bucket]["ytrue"], d[bucket]["ypred"], average='weighted', zero_division=0)
-            f1_dict[bucket] = f1_score(d[bucket]["ytrue"], d[bucket]["ypred"], average='weighted', zero_division=0)
+            # 1_dict[bucket] = f1_score(d[bucket]["ytrue"], d[bucket]["ypred"], average='weighted', zero_division=0)
 
     buckets = list(acc_dict.keys())
     acc = list(acc_dict.values())
@@ -316,132 +483,12 @@ def plot_metric_buckets(ytest, ypred, percents, fname):
     plt.savefig(fname + "-r")
     plt.close()
 
-def preprocessing(X_init, y_init):
-  X_init = X_init[:] / 255.
-  y_init = y_init[:] / 1.
 
-  X = []
-  y = []
-  for Xi, yi in zip(X_init, y_init):
-    im = tf.image.resize(Xi, (150, 150))
-    X.append(im)
-    y.append(yi)
-
-  X = tf.stack(X)
-  y = tf.stack(y)
-  return X, y
-
-# given the df for a subimg, returns the highest percentage seal found
-def get_seal_percent(df_subimg):
-    seal_percents = []
-    for i in df_subimg.itertuples():
-      seal_percents.append(i[3])
-    return max(seal_percents)
-
-
-# convert ypred back to predictions of 0, 1, 2
-# convert ytest from tensor to list
-def convert_arrs(ypred, ytest, binary_flag=True):
-  ypred_ = []
-  if binary_flag == True:
-      for i in range(len(ypred)):
-          if ypred[i] > .5:
-              ypred_.append(1)
-          else:
-              ypred_.append(0)
-  else:
-      for i in range(len(ypred)):
-        confidence_arr = list(ypred[i])
-        ypred_.append(np.argmax(confidence_arr))
-  ytest_ = []
-  for i in range(len(ytest)):
-    ytest_.append(int(ytest[i]))
-  return ypred_, ytest_
-
-
-""" Extract Labels """
-def get_labels_tertiary(bb_data, min_threshold = 0.3, max_threshold = 0.8):
-  labels = []
-  for df_subimg in bb_data:
-    if not isinstance(df_subimg, type(None)):
-      seal_percent = get_seal_percent(df_subimg)
-      if seal_percent > max_threshold:
-        val = 2
-      elif seal_percent > min_threshold:
-        val = 1
-    else:
-      val = 0
-    labels.append(val)
-  labels = np.array(labels)
-  return labels
-
-
-def get_labels_binary(bb_data, min_threshold = 0.3):
-    labels = []
-    for df_subimg in bb_data:
-      if not isinstance(df_subimg, type(None)):
-        if get_seal_percent(df_subimg) > min_threshold:
-          val = 1
-        else:
-          val = 0
-      else:
-        val = 0
-      labels.append(val)
-    labels = np.array(labels)
-    return labels
-
-def print_cm(cm, labels, hide_zeroes=False, hide_diagonal=False, hide_threshold=None):
-    """pretty print for confusion matrixes"""
-    columnwidth = max([len(x) for x in labels] + [5])  # 5 is value length
-    empty_cell = " " * columnwidth
-
-    line = " " + "-" * 26
-    print(line)
-    # Begin CHANGES
-    fst_empty_cell = (columnwidth-3)//2 * " " + "t/p" + (columnwidth-3)//2 * " "
-
-    if len(fst_empty_cell) < len(empty_cell):
-        fst_empty_cell = " " * (len(empty_cell) - len(fst_empty_cell)) + fst_empty_cell
-    # Print header
-    print("|    " + fst_empty_cell, end=" ")
-    # End CHANGES
-
-    s_end = "\t   |"
-    for label in labels:
-        if label == labels[len(labels) - 1]:
-            print("%{0}s".format(columnwidth) % label, end=s_end)
-        else:
-            print("%{0}s".format(columnwidth) % label, end=" ")
-
-
-    print()
-    # Print rows
-    for i, label1 in enumerate(labels):
-        print("|    %{0}s".format(columnwidth) % label1, end=" ")
-        for j in range(len(labels)):
-            cell = "%{0}d".format(columnwidth) % cm[i, j]
-            if hide_zeroes:
-                cell = cell if float(cm[i, j]) != 0 else empty_cell
-            if hide_diagonal:
-                cell = cell if i != j else empty_cell
-            if hide_threshold:
-                cell = cell if cm[i, j] > hide_threshold else empty_cell
-            if j == 1:
-                print(cell, end=s_end)
-            else:
-                print(cell, end=" ")
-        print()
-    print(line)
-
-
-def get_string(s, len_line):
-    num_spaces = len_line - len(s)
-    return s + ' ' * num_spaces + "|"
-
-  # given X and y data, returns newly shuffled X and y data
-  # def shuffle_xy(X, y):
-  #   indices = tf.range(start=0, limit=tf.shape(Xtrain)[0], dtype=tf.int32)
-  #   shuffled_indices = tf.random.shuffle(indices)
-  #   X_shuffled = tf.gather(X, shuffled_indices)
-  #   y_shuffled = tf.gather(y, shuffled_indices)
-  #   return X_shuffled, y_shuffled
+# given X and y data, returns newly shuffled X and y data
+def shuffle_xy(X, y):
+    indices = tf.range(start=0, limit=tf.shape(Xtrain)[0], dtype=tf.int32)
+    shuffled_indices = tf.random.shuffle(indices)
+    X_shuffled = tf.gather(X, shuffled_indices)
+    y_shuffled = tf.gather(y, shuffled_indices)
+    return X_shuffled, y_shuffled
+"""

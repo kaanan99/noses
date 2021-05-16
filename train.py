@@ -33,9 +33,6 @@ else:
     strides_grid = [(2, 2)]
     dropout_flag_grid = [True]
 
-# dp_rate_grid = [.1, .2, .3, .4, .5]
-
-
 
 """ End of User Input """
 
@@ -81,37 +78,28 @@ for model_params in model_params_grid:
     strides = model_params[6]
     dropout_flag = model_params[7]
 
-    """  Extract labels """
     if binary_flag == True:
         labels = get_labels_binary(bb_data, threshold_min)
     else:
         labels = get_labels_tertiary(bb_data, threshold_min, threshold_max)
 
+    # get a new train test split on first run through or if the thresholds change
     if first_pass == True or prev_threshold_min != threshold_min or prev_threshold_max != threshold_max:
         train_test_dict = train_test_split(imgs, bb_data, labels, threshold_min)
         first_pass = False
 
-    # run model
     ypred, ypred_no_filter = run_model(train_test_dict,
                         threshold_min, threshold_max, cnn_blocks, dense_layers, filter_mult, kernel_size,
                         strides, dropout_flag, model_num)
-
-    # extract data from train test split
     ytest = train_test_dict["ytest"]
     ytest_no_filter = train_test_dict["ytest_no_filter"]
     seal_percents = train_test_dict["seal_percents"]
     seal_percents_no_filter = train_test_dict["seal_percents_no_filter"]
-
-    # convert arrays from confidence values to classifications
     ypred_, ytest_ = convert_arrs(ypred, ytest, binary_flag)
     ypred_no_filter_, ytest_no_filter_ = convert_arrs(ypred_no_filter, ytest_no_filter, binary_flag)
-
-    # print test metrics and confusions matrix
     print_metrics(ypred_, ytest_)
     print_confusion_matrix(ypred_, ytest_, binary_flag)
-
-    # plot buckets
-    plot_buckets(ytest_no_filter_, ypred_no_filter_, seal_percents_no_filter, path_plots + str(model_num))
+    plot_buckets(ypred_no_filter_, ytest_no_filter_, seal_percents_no_filter, path_plots + str(model_num))
     model_num += 1
 
 
