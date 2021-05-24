@@ -6,7 +6,7 @@ path_plots = "/noses/cnn_plots/"
 
 #-------------------- USER INPUT --------------------
 # size of dataset - "small", "medium", or "large"
-size = "medium"
+size = "large"
 
 # binary or tertiary classificaiton
 binary_flag = True
@@ -14,22 +14,22 @@ full_grid_search = False
 
 # grid search parameters
 # note for threshold_min_grid: probably want to be bigger for binary and small for tertiary
-if full_grid_search == True:
-    threshold_min_grid = [.7, .8]
+if full_grid_search:
+    threshold_min_grid = [.95]
     threshold_max_grid = [.7, .8, .9, 1]
-    cnn_blocks_grid = [2, 3, 4]
-    dense_layers_grid = [2, 3, 4, 5, 6]
+    cnn_blocks_grid = [3, 4]
+    dense_layers_grid = [5, 6]
     filter_mult_grid = [0.5, 1]
     kernel_size_grid = [2, 3]
-    strides_grid = [(2, 2), (3, 3), (4, 4), (5, 5)]
-    dropout_flag_grid = [True, False]
+    strides_grid = [(2, 2), (3, 3), (4, 4)]
+    dropout_flag_grid = [True]
 else:
-    threshold_min_grid = [.5]
-    hreshold_max_grid = [.7]
-    cnn_blocks_grid = [1]
-    dense_layers_grid = [1]
-    filter_mult_grid  = [.5]
-    kernel_size_grid = [2]
+    threshold_min_grid = [.3]
+    threshold_max_grid = [.7]
+    cnn_blocks_grid = [3]
+    dense_layers_grid = [2]
+    filter_mult_grid = [.5]
+    kernel_size_grid = [3]
     strides_grid = [(2, 2)]
     dropout_flag_grid = [True]
 
@@ -66,7 +66,7 @@ model_params_grid = list(itertools.product(threshold_min_grid, threshold_max_gri
 first_pass = True
 prev_threshold_min = threshold_min_grid[0]
 prev_threshold_max = threshold_max_grid[0]
-model_num = 1
+model_num = 351
 for model_params in model_params_grid:
     # print(model_num)
     threshold_min = model_params[0]
@@ -99,8 +99,10 @@ for model_params in model_params_grid:
     ypred_no_filter_, ytest_no_filter_ = convert_arrs(ypred_no_filter, ytest_no_filter, binary_flag)
     print_metrics(ypred_, ytest_)
     print_confusion_matrix(ypred_, ytest_, binary_flag)
-    plot_buckets(ypred_no_filter_, ytest_no_filter_, seal_percents_no_filter, path_plots + str(model_num))
+    plot_buckets(ypred_no_filter_, ytest_no_filter_, seal_percents_no_filter, threshold_min, threshold_max,
+                 binary_flag, path_plots + str(model_num))
     model_num += 1
+
 
 
 #-------------------- OLD CODE --------------------

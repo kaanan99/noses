@@ -376,7 +376,7 @@ def get_string(s, len_line):
 #-------------------- MODEL PLOTTING --------------------
 # given the predictions and labels for the test set with no filter
 # saves a bar plot for the % predicted as a seal over different seal percentage buckets
-def plot_buckets(ypred, ytest, percents, fname):
+def plot_buckets(ypred, ytest, percents, threshold_min, threshold_max, binary_flag, fname):
     d = {}
     buckets = ["0%", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
     for bucket in buckets:
@@ -407,11 +407,26 @@ def plot_buckets(ypred, ytest, percents, fname):
             new_d[bucket] = d[bucket]["sum"] / d[bucket]["total"]
 
     buckets = list(new_d.keys()); values = list(new_d.values())
-    plt.bar(range(len(new_d)), values, tick_label=buckets, color='r')
-    plt.xticks(rotation=45)
+    plt.figure(figsize=[6.4, 8])
+    if binary_flag:
+        plt.bar(range(1), values[0], color='r')
+        plt.bar(range(1, int(math.floor(threshold_min*10)+1)), values[1:int(math.floor(threshold_min*10))+1], color='y')
+        plt.bar(range(int(math.floor(threshold_min*10+1)), len(new_d)), values[int(math.floor(threshold_min*10)+1):],
+                color='g')
+    else:
+        plt.bar(range(int(math.floor(threshold_min * 10) + 1)), values[:int(math.floor(threshold_min * 10) + 1)],
+                color='r')
+        plt.bar(range(int(math.floor(threshold_min * 10) + 1), int(math.floor(threshold_max * 10) + 1)),
+                values[int(math.floor(threshold_min * 10) + 1):int(math.floor(threshold_max * 10)) + 1], color='y')
+        plt.bar(range(int(math.floor(threshold_max * 10 + 1)), len(new_d)),
+                values[int(math.floor(threshold_max * 10) + 1):], color='g')
+    # plt.bar(range(len(new_d)), values, tick_label=buckets, color='r')
+    plt.xticks(range(len(new_d)), labels=buckets, rotation=45)
     plt.xlabel("% Seal In Image")
-    plt.title("% Predicted As A Seal")
+    plt.ylabel("% Predicted as a Full Seal")
+    plt.title("Predicted Full Seals")
     plt.ylim(0, 1)
+    plt.legend(['No Seal', 'Partial Seal', 'Full Seal'], loc='upper left')
     plt.savefig(fname, edgecolor="r")
     plt.close()
 
