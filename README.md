@@ -64,9 +64,13 @@ The bin plot of the (percentage of images predicted as a seal) vs (the percentag
 The bash commands shown below demonstrate how to build and run the docker container to start running **train.py**.
 
 jdavi104@f35:~/noses $ ./build_docker.sh 
+
 ...
+
 jdavi104@f35:~/noses $ ./start_docker.sh 
+
 ...
+
 You are running this container as user with ID 3070646 and group 9999,
 which should map to the ID and group for your user on the Docker host. Great!
 
