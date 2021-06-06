@@ -53,6 +53,27 @@ The “User Input” section at the top is where you can specify various paramet
 - strides_grid: grid for the strides, which specifies the strides of the convolution along the height and width
 - dropout_flag_grid: grid for dropout flag, a boolean flag indicating whether to add a dropout layer 
 
+## Training Output
+Information about each model trained in the grid search and the test metrics are printed to stdout.
+
+
+The bin plot of the (percentage of images predicted as a seal) vs (the percentage of the seal in the image) are added to **/cnn_plots**.  These plots are also desribed in **final_report.pdf**.
+
+## Running the Docker
+
+The bash commands shown below demonstrate how to build and run the docker container to start running **train.py**.
+
+jdavi104@f35:~/noses $ ./build_docker.sh 
+...
+jdavi104@f35:~/noses $ ./start_docker.sh 
+...
+You are running this container as user with ID 3070646 and group 9999,
+which should map to the ID and group for your user on the Docker host. Great!
+
+tf-docker / > cd noses/
+
+tf-docker /noses > python3 train.py 
+
 ## Future Work
 Future research will involve making the transition from binary classification to tertiary classification.  Tertiary classification proves much more difficult than binary classification.  How is the network to distinguish between a seal that is partially in the image from a seal that is fully in the image?  How can we manipulate the threshold_min and threshold_max levels to understand to better understand and utilize the network’s decision-making process?  This is the next major step towards answering our research question - can we use machine learning on drone data to obtain estimates for the seal population?
 
