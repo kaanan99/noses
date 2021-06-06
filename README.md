@@ -17,12 +17,12 @@ The images and bounding box data are stored locally in **/images_data** and on t
 
 ## The Code
 #### split_and_label.py
-- Takes the images and the corresponding bounding box data as input
+- Takes in the images and the corresponding bounding box data as from *path_data*
 - Splits the images into smaller sub images and generates its corresponding bounding box data
-- Saves the sub images and bounding box data under /data2/noses_data/cnn_data.  Three different sets of data are stored, small, medium, and large:
-  - Small - 1000 images: images_small.npy and bb_data_small.npy
-  - Medium - 5000 images: images_medium.npy and bb_data_small.npy
-  - Large - all images: images.npy and bb_data.npy
+- Saves the sub images and bounding box data to the *path_images*.  Three different sets of data are stored, small, medium, and large:
+  - Small - 1000 images: **images_small.npy** and **bb_data_small.npy**
+  - Medium - 5000 images: **images_medium.npy** and bb_data_small.npy**
+  - Large - all images: **images.npy** and **bb_data.npy**
 
 * The small and medium datasets are used for testing the functionality of the code while making updates while the large dataset is used in an attempt to train high performing models.
 
@@ -41,17 +41,19 @@ Performs a comprehensive grid search over different hyperparameters to find the 
   - “Full seal”: any image where the percentage of seal found in the image is greater than threshold_max
 
 The “User Input” section at the top is where you can specify various parameters including:
-- size: the size of the dataset
-- binary_flag: true for binary classification, false for tertiary classification 
-- full_grid_search: true to run a full grid search, false to run an arbitrary model
-- threshold_min_grid: grid for threshold_min, the minimum percentage to indicate the presence of a seal
-- threshold_max_grid: grid for threshold_max, the maximum percentage to indicate the presence of a partial seal
-- cnn_blocks_grid: grid for the number of Conv-Conv-Pool (CCP) blocks
-- dense_layers_grid: grid for the number of dense layers
-- filter_mult_grid: grid for the filter multiplier, a multiplier that determines the dimensionality of the output space for the convolutional layers
-- kernel_size_grid: grid for the kernel size, which specifies the height and width of the convolution window
-- strides_grid: grid for the strides, which specifies the strides of the convolution along the height and width
-- dropout_flag_grid: grid for dropout flag, a boolean flag indicating whether to add a dropout layer 
+- *path_data*: the path for the input training data and labels to the cnn
+- *path_plots*: the path for the outputted bin plots
+- *size*: the size of the dataset
+- *binary_flag*: true for binary classification, false for tertiary classification 
+- *full_grid_search*: true to run a full grid search, false to run an arbitrary model
+- *threshold_min_grid*: grid for threshold_min, the minimum percentage to indicate the presence of a seal
+- *threshold_max_grid*: grid for threshold_max, the maximum percentage to indicate the presence of a partial seal
+- *cnn_blocks_grid*: grid for the number of Conv-Conv-Pool (CCP) blocks
+- *dense_layers_grid*: grid for the number of dense layers
+- *filter_mult_grid*: grid for the filter multiplier, a multiplier that determines the dimensionality of the output space for the convolutional layers
+- *kernel_size_grid*: grid for the kernel size, which specifies the height and width of the convolution window
+- *strides_grid*: grid for the strides, which specifies the strides of the convolution along the height and width
+- *dropout_flag_grid*: grid for dropout flag, a boolean flag indicating whether to add a dropout layer 
 
 ## Training Output
 Information about each model trained in the grid search and the test metrics are printed to stdout.
