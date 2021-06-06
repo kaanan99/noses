@@ -1,0 +1,50 @@
+<annotation>
+	<folder>20160214</folder>
+	<filename>DJI_0150.JPG</filename>
+	<path>C:\Users\mattm\Documents\CalPoly\NOSES Project\20160214\DJI_0150.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4000</width>
+		<height>2250</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>adult male seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3651</xmin>
+			<ymin>789</ymin>
+			<xmax>3744</xmax>
+			<ymax>940</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>adult female seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>979</xmin>
+			<ymin>1608</ymin>
+			<xmax>1044</xmax>
+			<ymax>1783</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>adult female seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>947</xmin>
+			<ymin>2054</ymin>
+			<xmax>1030</xmax>
+			<ymax>2246</ymax>
+		</bndbox>
+	</object>
+</annotation>

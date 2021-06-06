@@ -1,0 +1,50 @@
+<annotation>
+	<folder>Seals</folder>
+	<filename>DJI_0015.JPG</filename>
+	<path>/Users/juliandavis/Downloads/Seals/DJI_0015.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4000</width>
+		<height>2250</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Adult Female or Young Male</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1338</xmin>
+			<ymin>350</ymin>
+			<xmax>1470</xmax>
+			<ymax>478</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>Adult Female or Young Male</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1748</xmin>
+			<ymin>358</ymin>
+			<xmax>1850</xmax>
+			<ymax>534</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>Adult Female or Young Male</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3236</xmin>
+			<ymin>1212</ymin>
+			<xmax>3436</xmax>
+			<ymax>1294</ymax>
+		</bndbox>
+	</object>
+</annotation>

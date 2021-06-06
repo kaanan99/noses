@@ -1,0 +1,38 @@
+<annotation>
+	<folder>ellies</folder>
+	<filename>DJI_0001.JPG</filename>
+	<path>/Users/melinamartin/Desktop/ellies/DJI_0001.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4000</width>
+		<height>2250</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>adult male</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2240</xmin>
+			<ymin>1310</ymin>
+			<xmax>2319</xmax>
+			<ymax>1379</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>adult male</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1344</xmin>
+			<ymin>1931</ymin>
+			<xmax>1416</xmax>
+			<ymax>1984</ymax>
+		</bndbox>
+	</object>
+</annotation>

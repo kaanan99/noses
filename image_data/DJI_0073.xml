@@ -1,0 +1,134 @@
+<annotation>
+	<folder>Drone Images</folder>
+	<filename>DJI_0073.JPG</filename>
+	<path>/Users/Alexis/Desktop/Elephant Seal Lab/Drone Images/DJI_0073.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4000</width>
+		<height>2250</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1516</xmin>
+			<ymin>388</ymin>
+			<xmax>1681</xmax>
+			<ymax>521</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1202</xmin>
+			<ymin>518</ymin>
+			<xmax>1275</xmax>
+			<ymax>718</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>adult male</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3372</xmin>
+			<ymin>1850</ymin>
+			<xmax>3526</xmax>
+			<ymax>2026</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1868</xmin>
+			<ymin>1800</ymin>
+			<xmax>1964</xmax>
+			<ymax>1904</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1810</xmin>
+			<ymin>1542</ymin>
+			<xmax>1908</xmax>
+			<ymax>1666</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2340</xmin>
+			<ymin>1490</ymin>
+			<xmax>2508</xmax>
+			<ymax>1542</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2690</xmin>
+			<ymin>1212</ymin>
+			<xmax>2776</xmax>
+			<ymax>1370</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2358</xmin>
+			<ymin>1012</ymin>
+			<xmax>2456</xmax>
+			<ymax>1098</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2490</xmin>
+			<ymin>1095</ymin>
+			<xmax>2578</xmax>
+			<ymax>1270</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2240</xmin>
+			<ymin>1053</ymin>
+			<xmax>2328</xmax>
+			<ymax>1193</ymax>
+		</bndbox>
+	</object>
+</annotation>

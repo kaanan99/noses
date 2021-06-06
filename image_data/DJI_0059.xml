@@ -1,0 +1,74 @@
+<annotation>
+	<folder>Moon</folder>
+	<filename>DJI_0059.JPG</filename>
+	<path>/Users/robertmoon/Downloads/Moon/DJI_0059.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4000</width>
+		<height>2250</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>208</xmin>
+			<ymin>1255</ymin>
+			<xmax>269</xmax>
+			<ymax>1401</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2671</xmin>
+			<ymin>75</ymin>
+			<xmax>2798</xmax>
+			<ymax>160</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2712</xmin>
+			<ymin>94</ymin>
+			<xmax>2801</xmax>
+			<ymax>183</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2824</xmin>
+			<ymin>136</ymin>
+			<xmax>2985</xmax>
+			<ymax>228</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>male juvenile / female juvenile / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3518</xmin>
+			<ymin>569</ymin>
+			<xmax>3580</xmax>
+			<ymax>734</ymax>
+		</bndbox>
+	</object>
+</annotation>

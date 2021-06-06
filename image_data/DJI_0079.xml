@@ -1,0 +1,158 @@
+<annotation>
+	<folder>20160214</folder>
+	<filename>DJI_0159.JPG</filename>
+	<path>C:\Users\mattm\Documents\CalPoly\NOSES Project\20160214\DJI_0159.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4000</width>
+		<height>2250</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1932</xmin>
+			<ymin>797</ymin>
+			<xmax>2007</xmax>
+			<ymax>835</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1980</xmin>
+			<ymin>721</ymin>
+			<xmax>2030</xmax>
+			<ymax>783</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2340</xmin>
+			<ymin>666</ymin>
+			<xmax>2379</xmax>
+			<ymax>750</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2377</xmin>
+			<ymin>701</ymin>
+			<xmax>2442</xmax>
+			<ymax>769</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3972</xmin>
+			<ymin>1490</ymin>
+			<xmax>4000</xmax>
+			<ymax>1523</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>adult female seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3898</xmin>
+			<ymin>1423</ymin>
+			<xmax>3972</xmax>
+			<ymax>1552</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3398</xmin>
+			<ymin>1320</ymin>
+			<xmax>3431</xmax>
+			<ymax>1376</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3531</xmin>
+			<ymin>1708</ymin>
+			<xmax>3604</xmax>
+			<ymax>1765</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3073</xmin>
+			<ymin>2019</ymin>
+			<xmax>3119</xmax>
+			<ymax>2106</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>adult male seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3207</xmin>
+			<ymin>1945</ymin>
+			<xmax>3388</xmax>
+			<ymax>2016</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3460</xmin>
+			<ymin>2193</ymin>
+			<xmax>3488</xmax>
+			<ymax>2250</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>baby seal</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3490</xmin>
+			<ymin>2188</ymin>
+			<xmax>3526</xmax>
+			<ymax>2246</ymax>
+		</bndbox>
+	</object>
+</annotation>

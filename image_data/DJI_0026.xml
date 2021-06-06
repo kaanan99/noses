@@ -1,0 +1,62 @@
+<annotation>
+	<folder>drive-download-20210224T191118Z-001</folder>
+	<filename>DJI_0006.JPG</filename>
+	<path>C:\Users\mverburg\Documents\winter 21\mammals\drive-download-20210224T191118Z-001\DJI_0006.JPG</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4000</width>
+		<height>2250</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>adult male</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1122</xmin>
+			<ymin>1068</ymin>
+			<xmax>1211</xmax>
+			<ymax>1181</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>juvenile male / juvenile female / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2320</xmin>
+			<ymin>800</ymin>
+			<xmax>2412</xmax>
+			<ymax>953</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>juvenile male / juvenile female / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2462</xmin>
+			<ymin>140</ymin>
+			<xmax>2526</xmax>
+			<ymax>282</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>juvenile male / juvenile female / adult female</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2230</xmin>
+			<ymin>14</ymin>
+			<xmax>2298</xmax>
+			<ymax>106</ymax>
+		</bndbox>
+	</object>
+</annotation>
