@@ -1,10 +1,10 @@
 from funcs_train import *
 
+#-------------------- USER INPUT --------------------
+
 path_data = "/data2/noses_data/cnn_data/"
-# path_plots = "/data2/noses_data/cnn_plots/"
 path_plots = "/noses/cnn_plots/"
 
-#-------------------- USER INPUT --------------------
 # size of dataset - "small", "medium", or "large"
 size = "large"
 
