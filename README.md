@@ -11,7 +11,7 @@ Images: We collected drone images of elephant seals from http://www.anonuevorese
 
 Bounding Box Data: We tagged each of the collected images with bounding boxes using a labeling tool from https://github.com/tzutalin/labelImg
 
-The images and bounding box data are stored under **/data2/noses_data/images_data/**
+The images and bounding box data are stored locally in **/images_data** and on the servers in **/data2/noses_data/images_data/**
 - **DJI_xxxx.JPG** files are the images
 - **DJI_xxxx.xml** files are the bounding box data
 
