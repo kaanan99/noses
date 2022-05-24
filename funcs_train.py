@@ -31,6 +31,36 @@ dp_rate = .1
 
 
 #-------------------- MODEL ARCHITECTURE --------------------
+# Used for testing
+def create_model_2():
+   model = keras.models.Sequential()
+   # Input layer
+   #model.add(layers.Flatten())
+   #model.add(layers.Dense(units = 150**2, activation = 'relu', input_shape = (150,150, 3)))
+   #Convolutional Layer
+   model.add(layers.Conv2D(filters=64, kernel_size= 3, input_shape = (150, 150, 3), activation = "relu"))
+   model.add(layers.Conv2D(filters=32, kernel_size= 3, activation = "relu"))
+   model.add(layers.MaxPooling2D((4, 4)))
+   '''
+   model.add(layers.Conv2D(filters=16, kernel_size= 3, activation = "relu"))
+   model.add(layers.MaxPooling2D((2, 2)))
+   '''
+   # Flatten after Convolutional layers
+   model.add(layers.Flatten())
+   # 3 Dense Layers
+   #model.add(layers.Dense(units = 1024, activation = 'relu'))
+   #model.add(layers.Dense(units = 512, activation = 'relu'))
+   model.add(layers.Dense(units = 256, activation = 'relu'))
+   model.add(layers.Dense(units = 128, activation = 'relu'))
+   model.add(layers.Dense(units = 64, activation = 'relu'))
+   model.add(layers.Dense(units = 32, activation = 'relu'))
+   #model.add(layers.Flatten())
+   # Output layer
+   model.add(layers.Dense(units = 3, activation = 'softmax'))
+   # originally sparse_categorical_crossentropy
+   model.compile(loss='categorical_crossentropy', metrics='accuracy')
+   return model
+
 # given the model hyperparameters
 # returns the model to train
 def create_model(cnn_blocks=1, dense_layers=1, filter_multiplier = 1, kernel_size=3,
@@ -75,20 +105,24 @@ def run_model(train_test_dict,
   ytrain = train_test_dict["ytrain"]
   Xtest = train_test_dict["Xtest"]
   ytest = train_test_dict["ytest"]
-  Xtest_no_filter = train_test_dict["Xtest_no_filter"]
-  ytest_no_filter = train_test_dict["ytest_no_filter"]
+  #Xtest_no_filter = train_test_dict["Xtest_no_filter"]
+  #ytest_no_filter = train_test_dict["ytest_no_filter"]
 
-  model = create_model(cnn_blocks, dense_layers, filter_multiplier, kernel_size,
-                       strides, dropout_flag)
-  model.fit(Xtrain, ytrain, batch_size=batch_size, epochs=epochs, validation_split=.1, verbose=False)
-  res = model.evaluate(Xtest, ytest); loss = res[0]; acc = res[1]
+  model = create_model_2()#create_model(cnn_blocks, dense_layers, filter_multiplier, kernel_size, strides, dropout_flag)
+  print("model created")
+  #Modified fit
+  model.fit(Xtrain, pd.get_dummies(pd.Series(ytrain)), batch_size=None, epochs=1, verbose=1)
+  print("finished fitting")
+  res = model.evaluate(Xtest, pd.get_dummies(pd.Series(ytest))); loss = res[0]; acc = res[1]
+  print("finished evaluation")
   ypred = model.predict(Xtest)
-  ypred_no_filter = model.predict(Xtest_no_filter)
+  print("finished predicting")
+  #ypred_no_filter = model.predict(Xtest_no_filter)
   print_model_params(threshold_min, threshold_max, cnn_blocks, dense_layers, filter_multiplier,
                         kernel_size, strides, dropout_flag, model_num)
 
   #print(model.summary())
-  return ypred, ypred_no_filter
+  return ypred#, ypred_no_filter
 
 
 #-------------------- TRAIN TEST SPLIT --------------------
@@ -101,12 +135,12 @@ def train_test_split(imgs, bb_data, labels, threshold_min):
     indices_and_percents = get_indices_and_percents(bb_data, threshold_min)
     train_indices = indices_and_percents["train_indices"]
     test_indices = indices_and_percents["test_indices"]
-    test_indices_no_filter = indices_and_percents["test_indices_no_filter"]
+    #test_indices_no_filter = indices_and_percents["test_indices_no_filter"]
     train_test["Xtrain"], train_test["ytrain"] = preprocessing(imgs[train_indices], labels[train_indices])
     train_test["Xtest"], train_test["ytest"] = preprocessing(imgs[test_indices], labels[test_indices])
-    train_test["Xtest_no_filter"], train_test["ytest_no_filter"] = preprocessing(imgs[test_indices_no_filter], labels[test_indices_no_filter])
+    #train_test["Xtest_no_filter"], train_test["ytest_no_filter"] = preprocessing(imgs[test_indices_no_filter], labels[test_indices_no_filter])
     train_test["seal_percents"] = indices_and_percents["seal_percents"]
-    train_test["seal_percents_no_filter"] = indices_and_percents["seal_percents_no_filter"]
+    #train_test["seal_percents_no_filter"] = indices_and_percents["seal_percents_no_filter"]
     return train_test
 
 
@@ -130,25 +164,41 @@ def get_indices_and_percents(bb_data, threshold_min, test_frac = .1):
   # get num with seal, num without seal
   num_w_seal = len(indices_w_seal)
   size_dataset = int(num_w_seal * 10/4) # size for dataset with 40% of images containing seals
-  num_wo_seal = size_dataset - num_w_seal
+  #Original Code
+  #num_wo_seal = size_dataset - num_w_seal
+  # EDIT by Kaanan
+  num_wo_seal = len(bb_data)- num_w_seal
 
+  '''
   # get num with seal, num without seal (no filter)
   num_w_seal_no_filter = len(indices_w_seal_no_filter)
-  size_dataset_no_filter = int(num_w_seal_no_filter * 10/4)
+  # ORIGINAL CODE
+  #size_dataset_no_filter = int(num_w_seal_no_filter * 10/4)
+  #EDIT BY KAANAN
+  size_dataset_no_filter = num_w_seal_no_filter 
   num_wo_seal_no_filter = size_dataset_no_filter - num_w_seal_no_filter
+  '''
 
   # get indices for images w/o seals
   all_indices_wo_seal = [x for x in list(range(len(bb_data))) if x not in indices_w_seal]
+  print(len(all_indices_wo_seal))
+  print(num_wo_seal)
   indices_wo_seal = random.sample(all_indices_wo_seal, num_wo_seal)
 
+  '''
   # get indices for images w/o seals (no filter)
   all_indices_wo_seal_no_filter = [x for x in list(range(len(bb_data))) if x not in indices_w_seal_no_filter]
   indices_wo_seal_no_filter = random.sample(all_indices_wo_seal_no_filter, num_wo_seal_no_filter)
+  '''
 
   # numbers to get train test split
   num_train_w_seal = round((1 - test_frac) * num_w_seal)
   num_train_wo_seal = round((1 - test_frac) * num_wo_seal)
-  num_test_wo_seal = size_dataset - num_w_seal - num_train_wo_seal
+  # ORIGINAL CODE
+  #num_test_wo_seal = size_dataset - num_w_seal - num_train_wo_seal
+  # EDIT BY KAANAN
+  num_test_wo_seal = len(bb_data) - num_w_seal - num_train_wo_seal
+
 
   # numbers to get train test split (no filter)
   num_train_w_seal_no_filter = round((1 - test_frac) * num_w_seal_no_filter)
@@ -188,19 +238,23 @@ def get_seal_percent(df_subimg):
 
 # data preprocessing
 def preprocessing(X_init, y_init):
+  '''print("Normalizing")
+  X_init = np.array(X_init)
+  y_init = np.array(y_init)
   X_init = X_init[:] / 255. # normalizes image array
   y_init = y_init[:] / 1.
-
+  '''
   X = []
   y = []
-  for Xi, yi in zip(X_init, y_init):
+  '''for Xi, yi in zip(X_init, y_init):
     im = tf.image.resize(Xi, (150, 150))
     X.append(im)
-    y.append(yi)
-
-  X = tf.stack(X)
-  y = tf.stack(y)
-  return X, y
+    y.append(yi)'''
+  print("Resizing")
+  X = tf.image.resize(X_init, (150, 150))
+  #X = tf.stack(X)
+  #y = tf.stack(y)
+  return X, y_init
 
 
 #-------------------- CONVERTING PREDICTIONS --------------------
@@ -242,6 +296,28 @@ def get_labels_tertiary(bb_data, min_threshold, max_threshold):
         val = 0
     else:
       val = 0
+    labels.append(val)
+  labels = np.array(labels)
+  return labels
+
+
+
+# given the bounding box data
+# extracts and returns tertiary labels
+# e.g. -1 == "no seal", 0 == "partial seal", 1 == "full seal"
+def modified_get_labels_tertiary(bb_data, min_threshold, max_threshold):
+  labels = []
+  for df_subimg in bb_data:
+    if not isinstance(df_subimg, type(None)):
+      seal_percent = get_seal_percent(df_subimg)
+      if seal_percent > max_threshold:
+        val = 1
+      elif seal_percent > min_threshold:
+        val = 0
+      else:
+        val = -1
+    else:
+      val = -1
     labels.append(val)
   labels = np.array(labels)
   return labels
@@ -509,3 +585,8 @@ def shuffle_xy(X, y):
     y_shuffled = tf.gather(y, shuffled_indices)
     return X_shuffled, y_shuffled
 """
+#---------- Kaanans Functions -----------
+def train_test(indices):
+   test = random.sample(indices, int(len(indices) * .3 // 1))
+   train = [i for i in indices if i not in test]
+   return train, test

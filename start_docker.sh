@@ -1,5 +1,5 @@
 docker run \
-  -u $(id -u):$(id -g) \
+  -u 3221772:$(id -g) \
   --env="DISPLAY" \
   -e --runtime=nvidia \
   -it \

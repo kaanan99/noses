@@ -67,6 +67,7 @@ first_pass = True
 prev_threshold_min = threshold_min_grid[0]
 prev_threshold_max = threshold_max_grid[0]
 model_num = 480
+print(model_params_grid)
 for model_params in model_params_grid:
     # print(model_num)
     threshold_min = model_params[0]
