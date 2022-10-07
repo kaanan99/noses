@@ -49,16 +49,19 @@ def create_model_2():
    model.add(layers.Flatten())
    # 3 Dense Layers
    #model.add(layers.Dense(units = 1024, activation = 'relu'))
-   #model.add(layers.Dense(units = 512, activation = 'relu'))
+   model.add(layers.Dense(units = 512, activation = 'relu'))
    model.add(layers.Dense(units = 256, activation = 'relu'))
    model.add(layers.Dense(units = 128, activation = 'relu'))
    model.add(layers.Dense(units = 64, activation = 'relu'))
    model.add(layers.Dense(units = 32, activation = 'relu'))
    #model.add(layers.Flatten())
    # Output layer
-   model.add(layers.Dense(units = 3, activation = 'softmax'))
-   # originally sparse_categorical_crossentropy
-   model.compile(loss='categorical_crossentropy', metrics='accuracy')
+   #Tertiary
+   #model.add(layers.Dense(units = 3, activation = 'softmax'))
+   #Binary
+   model.add(layers.Dense(units = 2, activation = "sigmoid"))
+   # originally categorical_crossentropy
+   model.compile(loss='binary_crossentropy', metrics='accuracy')
    return model
 
 # given the model hyperparameters
@@ -263,13 +266,16 @@ def preprocessing(X_init, y_init):
 # convert ytest from tensor to list
 def convert_arrs(ypred, ytest, binary_flag=True):
   ypred_ = []
-  if binary_flag == True:
+  '''if binary_flag == True:
       for i in range(len(ypred)):
           if ypred[i] > .5:
               ypred_.append(1)
           else:
               ypred_.append(0)
-  else:
+  '''
+  #else:
+#Done for spacing
+  if True:
       for i in range(len(ypred)):
         confidence_arr = list(ypred[i])
         ypred_.append(np.argmax(confidence_arr))

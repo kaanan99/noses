@@ -17,7 +17,7 @@ path_plots = "/noses/cnn_plots/"
 
 
 # binary or tertiary classificaiton
-binary_flag = False
+binary_flag = True
 full_grid_search = True
 
 # grid search parameters
@@ -71,7 +71,6 @@ prev_threshold_min = threshold_min_grid[0]
 prev_threshold_max = threshold_max_grid[0]
 model_num = 480
 for model_params in model_params_grid:
-    print(model_params)
     threshold_min = model_params[0]
     threshold_max = model_params[1]
     cnn_blocks = model_params[2]
@@ -80,8 +79,6 @@ for model_params in model_params_grid:
     kernel_size = model_params[5]
     strides = model_params[6]
     dropout_flag = model_params[7]
-
-
 
 
     label_0 = []
@@ -93,8 +90,10 @@ for model_params in model_params_grid:
     label_2 = []
     img_2 = []
     bb_data_2 = []
+    
 
-    labels = get_labels_tertiary(bb_data, threshold_min, threshold_max)
+    labels = get_labels_binary(bb_data, threshold_min)
+    #labels = get_labels_tertiary(bb_data, threshold_min, threshold_max)
     # Separate images based on label 
     for x in range(len(labels)):
        if labels[x] == 0:
@@ -115,13 +114,20 @@ for model_params in model_params_grid:
     used_imgs = []
     used_bb_data = []
 
+
+    print("No Seals", len(label_0), len(label_0)/ len(labels))
+    print("Partial Seals", len(label_1), len(label_1)/ len(labels))
+    print("Full Seals", len(label_2), len(label_2)/ len(labels))
+
     # Randomly selecting 25,000 no seal images
-    sample_no_seal = random.sample(range(len(label_0)), 8000)
+    sample_no_seal = random.sample(range(len(label_0)), 15000)
     # Add sampled data to used labels, imgs, and bb_data
     for x in sample_no_seal:
        used_labels.append(label_0[x])
        used_imgs.append(img_0[x])
        used_bb_data.append(bb_data_0[x])
+    used_img0 = len(used_imgs)
+    print("no seals:", used_img0)
     '''
     # Randomly selecting 25,000 no seal images
     sample_no_seal = random.sample(range(len(label_1)), 4000)
@@ -145,17 +151,17 @@ for model_params in model_params_grid:
        used_imgs.append(current_img)
        used_labels.append(label_1[x])
        used_bb_data.append(bb_data_1[x])
-       # Flip image
+       '''# Flip image
        flipped_img = tf.image.flip_left_right(current_img)
        used_imgs.append(flipped_img)
        used_labels.append(label_1[x])
-       used_bb_data.append(bb_data_1[x])
+       used_bb_data.append(bb_data_1[x])'''
        '''# Rotate 180
        rotated_img = tf.image.rot90(tf.image.rot90(current_img))
        used_imgs.append(rotated_img)
        used_labels.append(label_2[x])
        used_bb_data.append(bb_data_2[x])'''
-
+    print("partial seals:", len(used_labels) - used_img0)
 
     # Add approx 12500 full seal images
     for x in range(len(label_2)):
@@ -170,8 +176,9 @@ for model_params in model_params_grid:
        used_bb_data.append(bb_data_2[x])
        '''
 
-    print(len(used_labels))
 
+    print("Total labels")
+    print(len(used_labels))
     print("Starting test train split")
     x_train, x_test, y_train, y_test = train_test_split(used_imgs, used_labels, test_size = .1, random_state=1) 
     ''' 
