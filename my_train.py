@@ -45,7 +45,7 @@ else:
 #-------------------- RETRIEVE DATA --------------------
 imgs = np.load("/data2/noses_data/cnn_data/images.npy", allow_pickle=True)
 bb_data = np.load("/data2/noses_data/cnn_data/bb_data.npy", allow_pickle=True)
-
+print(bb_data[0])
 #-------------------- GRID SEARCH --------------------
 """Parameters:
 - Threshold Min: minimum percentage to indicate the presence of a seal
