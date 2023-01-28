@@ -20,13 +20,14 @@ def parse_xml(xml):
   ymin = xml.find_all("ymin")
   xmax = xml.find_all("xmax")
   ymax = xml.find_all("ymax")
-  for i in range(len(label)):
+  min_size = min(len(label), len(xmin), len(ymin), len(xmax), len(ymax))
+  for i in range(min_size):
       label[i] = label[i].text
       xmin[i] = xmin[i].text
       ymin[i] = ymin[i].text
       xmax[i] = xmax[i].text
       ymax[i] = ymax[i].text
-  df = pd.DataFrame({"label": label, "xmin": xmin, "ymin": ymin, "xmax": xmax, "ymax": ymax})
+  df = pd.DataFrame({"label": label[:min_size], "xmin": xmin[:min_size], "ymin": ymin[:min_size], "xmax": xmax[:min_size], "ymax": ymax[:min_size]})
   return df
 
 '''
@@ -204,7 +205,7 @@ Inputs:
 def split_label_write(dim, img_path, imgs, xml, name, out_path):
    bb = get_bb(img_path, xml)
    sub_imgs, bb_data = split_and_label(dim[0], dim[1], dim[2], dim[3], imgs, bb)
-   print("Legnth of", name + ":", len(sub_imgs))
+   print("Length of", name + ":", len(sub_imgs))
    np.save(out_path + name + "_images.npy", sub_imgs)
    np.save(out_path + name + "_bb_data.npy", bb_data)
 
@@ -241,7 +242,6 @@ def main():
    # Create Splits
    train_xml, test_xml, train_img, test_img = train_test_split(xml_files, imgs, test_size = 1 - test_train_ratio, random_state = 5)
    train_xml, val_xml, train_img, val_img = train_test_split(train_xml, train_img, test_size = 1 - train_val_ratio, random_state = 5)
-
 
    # Split images and write to file
    dim = (150, 150, 75, 75)
