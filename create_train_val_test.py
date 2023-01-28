@@ -39,7 +39,7 @@ def clean_up_data(df):
    cat2 = 'male juvenile / female juvenile / adult female'
    cat3 = 'pup'
 
-   cat1_diffs = ["Adult Male", "Adult male", "adult male seal"]
+   cat1_diffs = ["Adult Male", "Adult male", "adult male seal", "Seal"]
 
    cat2_diffs = ['juvenile male / juvenile female / adult female',
                  'male juvenile / female juvenile /adult female',
@@ -241,6 +241,7 @@ def main():
    # Create Splits
    train_xml, test_xml, train_img, test_img = train_test_split(xml_files, imgs, test_size = 1 - test_train_ratio, random_state = 5)
    train_xml, val_xml, train_img, val_img = train_test_split(train_xml, train_img, test_size = 1 - train_val_ratio, random_state = 5)
+
 
    # Split images and write to file
    dim = (150, 150, 75, 75)
